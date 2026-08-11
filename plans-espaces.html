@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Plans et Vecteurs Normaux dans l'Espace</title>
+    
+    <!-- Configuration et chargement de MathJax -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 650px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 90px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 20px 0;
+    padding-right: 95px; /* <--- Ajoutez cette ligne ici */
+}
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #d0d0d0;
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f7fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <!-- Zone des boutons d'action avec le bouton Retour -->
+        <div class="buttons-container">
+            <button class="btn-action btn-secondary" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre résultat :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 200px; margin: 0 auto;" onclick="restartQuiz()">Recommencer</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            header: "On considère les points $A(1 ; 2 ; 0)$, $B(3 ; 0 ; 2)$ et $C(2 ; 1 ; 1)$.",
+            title: "Les points $A$, $B$ et $C$ définissent-ils un unique plan ?",
+            choices: [
+                { id: "choiceA", text: "A) Oui, car ils forment trois points distincts de l'espace." },
+                { id: "choiceB", text: "B) Non, car les points $A$, $B$ et $C$ sont alignés." },
+                { id: "choiceC", text: "C) Oui, car les vecteurs $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ ne sont pas colinéaires." }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. $\\overrightarrow{AB}(3-1 ; 0-2 ; 2-0) = \\overrightarrow{AB}(2 ; -2 ; 2)$.<br>" +
+                         "2. $\\overrightarrow{AC}(2-1 ; 1-2 ; 1-0) = \\overrightarrow{AC}(1 ; -1 ; 1)$.<br>" +
+                         "On remarque que $\\overrightarrow{AB} = 2\\overrightarrow{AC}$, donc les vecteurs $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ sont colinéaires.<br>" +
+                         "Conclusion : Les points $A$, $B$ et $C$ sont alignés. Ils ne définissent donc <strong>pas</strong> un plan unique.</p>"
+        },
+        {
+            header: "On considère les points $A(0 ; 1 ; 2)$, $B(1 ; 3 ; 1)$ et $C(-1 ; 2 ; 0)$.",
+            title: "Les points $A$, $B$ et $C$ définissent-ils un plan ?",
+            choices: [
+                { id: "choiceA", text: "A) Oui, car $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ ne sont pas colinéaires." },
+                { id: "choiceB", text: "B) Non, car ils sont alignés." },
+                { id: "choiceC", text: "C) Non, car les trois points sont confondus." }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "$\\overrightarrow{AB}(1 ; 2 ; -1)$ et $\\overrightarrow{AC}(-1 ; 1 ; -2)$.<br>" +
+                         "Les coordonnées ne sont pas proportionnelles ($1/(-1) \\neq 2/1$).<br>" +
+                         "Les vecteurs $\\overrightarrow{AB}$ et $\\overrightarrow{AC}$ ne sont pas colinéaires, les points $A, B, C$ ne sont pas alignés : ils définissent bien un unique plan $(ABC)$.</p>"
+        },
+        {
+            header: "Soit un plan $\\mathcal{P}$ défini par l'équation cartésienne : $3x - 2y + z - 5 = 0$.",
+            title: "Quelles sont les coordonnées d'un vecteur normal au plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $\\vec{n}(3 ; -2 ; -5)$" },
+                { id: "choiceB", text: "B) $\\vec{n}(3 ; -2 ; 1)$" },
+                { id: "choiceC", text: "C) $\\vec{n}(-3 ; 2 ; 1)$" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Règle :</strong><br>" +
+                         "Si un plan a pour équation $ax + by + cz + d = 0$, un vecteur normal a pour coordonnées $\\vec{n}(a ; b ; c)$.<br>" +
+                         "Ici, $a=3$, $b=-2$, $c=1$, donc $\\vec{n}(3 ; -2 ; 1)$.</p>"
+        },
+        {
+            header: "On considère le plan $\\mathcal{P}$ d'équation cartésienne : $-x + 4y - 2z + 1 = 0$.",
+            title: "Lequel des vecteurs suivants est AUSSI un vecteur normal à $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $\\vec{u}(2 ; -8 ; 4)$" },
+                { id: "choiceB", text: "B) $\\vec{u}(1 ; 4 ; 2)$" },
+                { id: "choiceC", text: "C) $\\vec{u}(-1 ; 4 ; 1)$" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "Un vecteur normal de base est $\\vec{n}(-1 ; 4 ; -2)$.<br>" +
+                         "Tout vecteur colinéaire non nul à $\\vec{n}$ est aussi normal à $\\mathcal{P}$.<br>" +
+                         "On observe que $\\vec{u}(2 ; -8 ; 4) = -2 \\vec{n}$. Les vecteurs sont colinéaires, donc $\\vec{u}$ est aussi un vecteur normal à $\\mathcal{P}$.</p>"
+        },
+        {
+            header: "Le plan $\\mathcal{P}$ passe par le point $A(1 ; -2 ; 3)$ et admet pour vecteur normal $\\vec{n}(2 ; 1 ; -3)$.",
+            title: "Quelle est l'équation cartésienne du plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $2x + y - 3z + 9 = 0$" },
+                { id: "choiceB", text: "B) $2x + y - 3z - 9 = 0$" },
+                { id: "choiceC", text: "C) $x - 2y + 3z - 9 = 0$" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. L'équation s'écrit $2x + 1y - 3z + d = 0$.<br>" +
+                         "2. On remplace par les coordonnées de $A(1 ; -2 ; 3)$ :<br>" +
+                         "$2(1) + 1(-2) - 3(3) + d = 0 \\implies 2 - 2 - 9 + d = 0 \\implies -9 + d = 0 \\implies d = 9$.<br>" +
+                         "Conclusion : $2x + y - 3z + 9 = 0$.</p>"
+        },
+        {
+            header: "On donne le point $M(0 ; 3 ; -1)$ et le vecteur $\\vec{n}(-1 ; 2 ; 4)$.",
+            title: "Déterminer une équation cartésienne du plan $\\mathcal{P}$ passant par $M$ et de vecteur normal $\\vec{n}$.",
+            choices: [
+                { id: "choiceA", text: "A) $-x + 2y + 4z - 2 = 0$" },
+                { id: "choiceB", text: "B) $-x + 2y + 4z + 1 = 0$" },
+                { id: "choiceC", text: "C) $-x + 2y + 4z + 10 = 0$" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "Équation de la forme $-x + 2y + 4z + d = 0$.<br>" +
+                         "Injection de $M(0 ; 3 ; -1)$ :<br>" +
+                         "$-(0) + 2(3) + 4(-1) + d = 0 \\implies 6 - 4 + d = 0 \\implies 2 + d = 0 \\implies d = -2$.<br>" +
+                         "L'équation est $-x + 2y + 4z - 2 = 0$.</p>"
+        },
+        {
+            header: "Soient le vecteur $\\vec{n}(1 ; -1 ; 2)$ et deux vecteurs directeurs $\\vec{u}(2 ; 0 ; -1)$ et $\\vec{v}(1 ; 3 ; 1)$ d'un plan $\\mathcal{P}$.",
+            title: "Le vecteur $\\vec{n}$ est-il un vecteur normal au plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Oui, car $\\vec{n} \\cdot \\vec{u} = 0$ et $\\vec{n} \\cdot \\vec{v} = 0$." },
+                { id: "choiceB", text: "B) Non, car $\\vec{n} \\cdot \\vec{u} \\neq 0$." },
+                { id: "choiceC", text: "C) Non, car $\\vec{n} \\cdot \\vec{v} \\neq 0$." }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul des produits scalaires :</strong><br>" +
+                         "1. $\\vec{n} \\cdot \\vec{u} = 1(2) + (-1)(0) + 2(-1) = 2 + 0 - 2 = 0$.<br>" +
+                         "2. $\\vec{n} \\cdot \\vec{v} = 1(1) + (-1)(3) + 2(1) = 1 - 3 + 2 = 0$.<br>" +
+                         "Comme $\\vec{n} \\cdot \\vec{u} = 0$ et $\\vec{n} \\cdot \\vec{v} = 0$, le vecteur $\\vec{n}$ est orthogonal aux deux vecteurs directeurs non colinéaires du plan. Il est donc normal au plan $\\mathcal{P}$.</p>"
+        },
+        {
+            header: "On considère le plan $\\mathcal{P}$ passant par $A(1;1;1)$ et de vecteurs directeurs $\\vec{u}(1;0;1)$ et $\\vec{v}(0;1;2)$.",
+            title: "Lequel des vecteurs suivants est un vecteur normal au plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $\\vec{n}(1 ; 2 ; 1)$" },
+                { id: "choiceB", text: "B) $\\vec{n}(-1 ; -2 ; 1)$" },
+                { id: "choiceC", text: "C) $\\vec{n}(2 ; 1 ; -1)$" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Vérification par produit scalaire :</strong><br>" +
+                         "Un vecteur normal doit être orthogonal à $\\vec{u}$ ET $\\vec{v}$.<br>" +
+                         "Testons $\\vec{n}(-1 ; -2 ; 1)$ :<br>" +
+                         "• $\\vec{n} \\cdot \\vec{u} = (-1)(1) + (-2)(0) + 1(1) = -1 + 0 + 1 = 0$.<br>" +
+                         "• $\\vec{n} \\cdot \\vec{v} = (-1)(0) + (-2)(1) + 1(2) = 0 - 2 + 2 = 0$.<br>" +
+                         "Conclusion : $\\vec{n}(-1 ; -2 ; 1)$ est bien un vecteur normal à $\\mathcal{P}$.</p>"
+        },
+        {
+            header: "Soit le plan $\\mathcal{P}$ d'équation $2x - y + 3z - 4 = 0$ et la droite $(D)$ de vecteur directeur $\\vec{d}(4 ; -2 ; 6)$.",
+            title: "Quelle est la position de la droite $(D)$ par rapport au plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite est parallèle au plan." },
+                { id: "choiceB", text: "B) La droite est orthogonale (perpendiculaire) au plan." },
+                { id: "choiceC", text: "C) La droite est incluse dans le plan." }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "Un vecteur normal du plan est $\\vec{n}(2 ; -1 ; 3)$.<br>" +
+                         "Le vecteur directeur de la droite est $\\vec{d}(4 ; -2 ; 6)$.<br>" +
+                         "On remarque que $\\vec{d} = 2\\vec{n}$. Le vecteur directeur de la droite est colinéaire au vecteur normal du plan.<br>" +
+                         "Conclusion : La droite $(D)$ est <strong>orthogonale</strong> au plan $\\mathcal{P}$.</p>"
+        },
+        {
+            header: "Soit le plan $\\mathcal{P}$ d'équation $x + 2y - z + 3 = 0$.",
+            title: "Le point $A(1 ; -1 ; 2)$ appartient-il au plan $\\mathcal{P}$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Oui, car ses coordonnées vérifient l'équation du plan." },
+                { id: "choiceB", text: "B) Non, car le calcul donne 0 au lieu de 3." },
+                { id: "choiceC", text: "C) Non, car $x_A + 2y_A - z_A + 3 \\neq 0$." }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "Remplaçons $x, y, z$ par les coordonnées de $A(1 ; -1 ; 2)$ :<br>" +
+                         "$x_A + 2y_A - z_A + 3 = 1 + 2(-1) - 2 + 3 = 1 - 2 - 2 + 3 = 0$.<br>" +
+                         "L'égalité est vérifiée, le point $A$ appartient donc bien au plan $\\mathcal{P}$.</p>"
+        }
+    ];
+
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var userAnswers = new Array(questions.length).fill(null);
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        // Gestion du bouton Retour
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+
+        // Si l'utilisateur a déjà répondu précédemment à cette question
+        if (userAnswers[currentQuestionIndex] !== null) {
+            currentChoice = userAnswers[currentQuestionIndex].choice;
+            document.getElementById("interactiveZone").style.display = "block";
+            selectChoice(currentChoice);
+            
+            // Affichage de la validation
+            var validationBox = document.getElementById("validationBox");
+            var validationText = document.getElementById("validationText");
+            
+            if (currentChoice === q.correct) {
+                validationBox.className = "validation-box correct";
+                validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse.";
+                document.getElementById("btnNext").disabled = false;
+            } else {
+                validationBox.className = "validation-box incorrect";
+                validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse.";
+                document.getElementById("btnNext").disabled = true;
+            }
+            validationBox.style.display = "block";
+        } else {
+            document.getElementById("interactiveZone").style.display = "none";
+            document.getElementById("validationBox").style.display = "none";
+            document.getElementById("btnNext").disabled = true;
+            currentChoice = null;
+        }
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        var isCorrect = (currentChoice === q.correct);
+        
+        // Enregistrement de la réponse
+        userAnswers[currentQuestionIndex] = {
+            choice: currentChoice,
+            correct: isCorrect
+        };
+
+        if (isCorrect) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function showFinalResults() {
+        // Calcul du score final basés sur les réponses
+        score = userAnswers.filter(a => a && a.correct).length;
+
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vos élèves maîtrisent parfaitement la géométrie des plans dans l'espace !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Quelques notions sur les équations cartésiennes à consolider.";
+        } else {
+            resultMsg.innerHTML = "<strong>Attention !</strong> Réviser les méthodes de détermination d'un vecteur normal et l'alignement des points.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = new Array(questions.length).fill(null);
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        loadQuestion();
+    }
+
+    window.onload = function() {
+        loadQuestion();
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Positions relatives de droites dans l'espace</title> <!-- cite: 1, 2 -->
+    
+    <!-- Configuration et chargement de MathJax -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script> <!-- cite: 1, 2 -->
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        /* Cadre principal de la carte */
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 650px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Positionnement du logo en haut à droite */
+        .quiz-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 90px;
+            height: auto;
+        }
+
+        /* Compteur de questions */
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        /* Contenu de la question */
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        /* Zone des boutons d'action */
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        /* Style pour le bouton Désactivé */
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Zone interactive contenant les options */
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f7fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        /* Zone de réponse et vérification */
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        /* Écran de résultat final */
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <!-- Image du Logo -->
+   <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <!-- Section Quiz -->
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div> <!-- cite: 1, 2 -->
+        <div id="quizHeader" class="quiz-header"></div> <!-- cite: 1, 2 -->
+        <div id="questionTitle" class="question-title"></div> <!-- cite: 1, 2 -->
+
+        <!-- Choix multiples -->
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div> <!-- cite: 1, 2 -->
+            
+            <!-- Explication détaillée -->
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p> <!-- cite: 1, 2 -->
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;"> <!-- cite: 1, 2 -->
+                <div id="explanationText"></div> <!-- cite: 1, 2 -->
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button> <!-- cite: 1, 2 -->
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button> <!-- cite: 1, 2 -->
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button> <!-- cite: 1, 2 -->
+        </div>
+    </div>
+
+    <!-- Section Résultat Final -->
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2> <!-- cite: 1, 2 -->
+        <p>Voici votre résultat :</p> <!-- cite: 1, 2 -->
+        <div id="resultScore" class="result-score">0 / 10</div> <!-- cite: 1, 2 -->
+        <p id="resultMsg" class="result-msg"></p> <!-- cite: 1, 2 -->
+        <button class="btn-action" style="max-width: 200px; margin: 0 auto;" onclick="restartQuiz()">Recommencer</button> <!-- cite: 1, 2 -->
+    </div>
+</div>
+
+<script>
+    // Banque de 10 questions basées uniquement sur le calcul algébrique
+    const questions = [
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 1 + 2t \\\\ y = 3 - t \\\\ z = -2 + 4t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = -4k \\\\ y = 1 + 2k \\\\ z = 5 - 8k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Sécantes" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Confondues" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs directeurs : $\\vec{u}(2 ; -1 ; 4)$ et $\\vec{v}(-4 ; 2 ; -8)$. On observe que $\\vec{v} = -2\\vec{u}$, donc $\\vec{u}$ et $\\vec{v}$ sont colinéaires. Les droites sont parallèles.<br>" +
+                         "2. Test de point : Pour $t=0$, $A(1 ; 3 ; -2) \\in (d)$. Vérifions si $A \\in (d')$ :<br>" +
+                         "$-4k = 1 \\implies k = -1/4$<br>" +
+                         "$1 + 2(-1/4) = 1/2 \\neq 3$. Le point $A \\notin (d')$.<br>" +
+                         "Conclusion : Les droites sont <strong>strictement parallèles</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 2 + t \\\\ y = 1 - 3t \\\\ z = -1 + 2t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = -2k \\\\ y = 7 + 6k \\\\ z = -5 - 4k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondues" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Sécantes" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs directeurs : $\\vec{u}(1 ; -3 ; 2)$ et $\\vec{v}(-2 ; 6 ; -4)$. Comme $\\vec{v} = -2\\vec{u}$, ils sont colinéaires.<br>" +
+                         "2. Test de point : Pour $t=0$, $A(2 ; 1 ; -1) \\in (d)$. Testons dans $(d')$ :<br>" +
+                         "$-2k = 2 \\implies k = -1$<br>" +
+                         "$y = 7 + 6(-1) = 1$ (ok)<br>" +
+                         "$z = -5 - 4(-1) = -1$ (ok).<br>" +
+                         "Le point $A$ appartient aussi à $(d')$.<br>" +
+                         "Conclusion : Les droites sont <strong>confondues</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 1 + t \\\\ y = 2 - t \\\\ z = 3 + 2t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 3 - k \\\\ y = 1 + 2k \\\\ z = -1 + k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Sécantes" },
+                { id: "choiceB", text: "B) Non coplanaires" },
+                { id: "choiceC", text: "C) Parallèles" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs directeurs : $\\vec{u}(1 ; -1 ; 2)$ et $\\vec{v}(-1 ; 2 ; 1)$ ne sont pas colinéaires.<br>" +
+                         "2. Résolution du système :<br>" +
+                         "$\\begin{cases} 1 + t = 3 - k \\implies t + k = 2 \\\\ 2 - t = 1 + 2k \\implies t + 2k = 1 \\\\ 3 + 2t = -1 + k \\end{cases}$<br>" +
+                         "En soustrayant la 1ère équation de la 2ème : $k = -1$, d'où $t = 3$.<br>" +
+                         "Vérification sur la 3ème équation : $z_1 = 3 + 2(3) = 9$ et $z_2 = -1 + (-1) = -2 \\neq 9$.<br>" +
+                         "Le système n'a aucune solution.<br>" +
+                         "Conclusion : Les droites sont <strong>non coplanaires</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = t \\\\ y = 1 + 2t \\\\ z = 2 - t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 2 - k \\\\ y = 3 + k \\\\ z = -1 + 2k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Parallèles" },
+                { id: "choiceB", text: "B) Non coplanaires" },
+                { id: "choiceC", text: "C) Sécantes" }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(1 ; 2 ; -1)$ et $\\vec{v}(-1 ; 1 ; 2)$ non colinéaires.<br>" +
+                         "2. Système :<br>" +
+                         "De $x$ : $t = 2 - k$.<br>" +
+                         "Dans $y$ : $1 + 2(2 - k) = 3 + k \\implies 5 - 2k = 3 + k \\implies 3k = 2 \\implies k = 1$ et $t = 1$.<br>" +
+                         "Vérification dans $z$ : $z_1 = 2 - 1 = 1$ et $z_2 = -1 + 2(1) = 1$.<br>" +
+                         "Le système admet la solution unique $(t=1, k=1)$.<br>" +
+                         "Conclusion : Elles sont <strong>sécantes</strong> au point $S(1 ; 3 ; 1)$.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 1 + 3t \\\\ y = -2 + t \\\\ z = 4 - 2t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = -2 + 6k \\\\ y = 5 + 2k \\\\ z = -1 - 4k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Sécantes" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Confondues" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(3 ; 1 ; -2)$ et $\\vec{v}(6 ; 2 ; -4)$. On a $\\vec{v} = 2\\vec{u}$, ils sont colinéaires.<br>" +
+                         "2. Test de point : Pour $t=0$, $A(1 ; -2 ; 4) \\in (d)$. Testons dans $(d')$ :<br>" +
+                         "$-2 + 6k = 1 \\implies 6k = 3 \\implies k = 0,5$.<br>" +
+                         "Pour $y$ : $5 + 2(0,5) = 6 \\neq -2$. $A \\notin (d')$.<br>" +
+                         "Conclusion : Les droites sont <strong>strictement parallèles</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 2 - t \\\\ y = 3 + 2t \\\\ z = 1 + t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 1 + k \\\\ y = 4 - k \\\\ z = 2 + 3k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Non coplanaires" },
+                { id: "choiceB", text: "B) Sécantes" },
+                { id: "choiceC", text: "C) Confondues" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(-1 ; 2 ; 1)$ et $\\vec{v}(1 ; -1 ; 3)$ non colinéaires.<br>" +
+                         "2. Système :<br>" +
+                         "$\\begin{cases} 2 - t = 1 + k \\implies k + t = 1 \\\\ 3 + 2t = 4 - k \\implies k + 2t = 1 \\\\ 1 + t = 2 + 3k \\end{cases}$<br>" +
+                         "En soustrayant la 1ère de la 2ème : $t = 0$, donc $k = 1$.<br>" +
+                         "Vérifions dans la 3ème équation : $1 + 0 = 1$ alors que $2 + 3(1) = 5 \\neq 1$. Le système n'a pas de solution.<br>" +
+                         "Conclusion : Les droites sont <strong>non coplanaires</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 1 + 2t \\\\ y = 1 + 3t \\\\ z = -1 + t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 3 - k \\\\ y = 4 + 2k \\\\ z = -k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Strictement parallèles" },
+                { id: "choiceB", text: "B) Sécantes" },
+                { id: "choiceC", text: "C) Non coplanaires" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(2 ; 3 ; 1)$ et $\\vec{v}(-1 ; 2 ; -1)$ non colinéaires.<br>" +
+                         "2. Système :<br>" +
+                         "De la 3ème équation : $-1 + t = -k \\implies k = 1 - t$.<br>" +
+                         "Substituons dans la 1ère : $1 + 2t = 3 - (1 - t) \\implies 1 + 2t = 2 + t \\implies t = 1$.<br>" +
+                         "D'où $k = 1 - 1 = 0$.<br>" +
+                         "Vérifions dans la 2ème équation : $y_1 = 1 + 3(1) = 4$ et $y_2 = 4 + 2(0) = 4$. Ça concorde !<br>" +
+                         "Conclusion : Elles sont <strong>sécantes</strong> au point $(3 ; 4 ; 0)$.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = 3t \\\\ y = -1 + 6t \\\\ z = 2 - 3t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 1 - k \\\\ y = 1 - 2k \\\\ z = 1 + k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondues" },
+                { id: "choiceB", text: "B) Non coplanaires" },
+                { id: "choiceC", text: "C) Strictement parallèles" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(3 ; 6 ; -3)$ et $\\vec{v}(-1 ; -2 ; 1)$. On a $\\vec{u} = -3\\vec{v}$, ils sont colinéaires.<br>" +
+                         "2. Test de point : Pour $t=0$, $A(0 ; -1 ; 2) \\in (d)$. Testons dans $(d')$ :<br>" +
+                         "$1 - k = 0 \\implies k = 1$.<br>" +
+                         "$y = 1 - 2(1) = -1$ (ok)<br>" +
+                         "$z = 1 + 1 = 2$ (ok).<br>" +
+                         "Le point $A$ appartient à $(d')$.<br>" +
+                         "Conclusion : Les droites sont <strong>confondues</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = t \\\\ y = 2 \\\\ z = 1 + 3t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 1 + 2k \\\\ y = -1 + k \\\\ z = 4 \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Non coplanaires" },
+                { id: "choiceB", text: "B) Sécantes" },
+                { id: "choiceC", text: "C) Parallèles" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(1 ; 0 ; 3)$ et $\\vec{v}(2 ; 1 ; 0)$ non colinéaires.<br>" +
+                         "2. Système :<br>" +
+                         "La 2ème équation donne directement : $2 = -1 + k \\implies k = 3$.<br>" +
+                         "La 3ème équation donne : $1 + 3t = 4 \\implies 3t = 3 \\implies t = 1$.<br>" +
+                         "Vérifions dans la 1ère équation : $x_1 = t = 1$ et $x_2 = 1 + 2(3) = 7 \\neq 1$.<br>" +
+                         "Le système n'a pas de solution !<br>" +
+                         "Conclusion : Les droites sont <strong>non coplanaires</strong>.</p>"
+        },
+        {
+            header: "On considère les droites $(d)$ et $(d')$ de représentations paramétriques :<br>" +
+                    "$(d) : \\begin{cases} x = -1 + 4t \\\\ y = 2 - 2t \\\\ z = 3 + 2t \\end{cases} (t \\in \\mathbb{R})$ &nbsp; et &nbsp; " +
+                    "$(d') : \\begin{cases} x = 3 - 2k \\\\ y = 0 + k \\\\ z = 5 - k \\end{cases} (k \\in \\mathbb{R})$",
+            title: "Quelle est la position relative des droites $(d)$ et $(d')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Strictement parallèles" },
+                { id: "choiceB", text: "B) Sécantes" },
+                { id: "choiceC", text: "C) Confondues" }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Calcul :</strong><br>" +
+                         "1. Vecteurs : $\\vec{u}(4 ; -2 ; 2)$ et $\\vec{v}(-2 ; 1 ; -1)$. On remarque que $\\vec{u} = -2\\vec{v}$, ils sont colinéaires.<br>" +
+                         "2. Test de point : Pour $t=0$, $A(-1 ; 2 ; 3) \\in (d)$. Testons dans $(d')$ :<br>" +
+                         "$3 - 2k = -1 \\implies -2k = -4 \\implies k = 2$.<br>" +
+                         "$y = 0 + 2 = 2$ (ok)<br>" +
+                         "$z = 5 - 2 = 3$ (ok).<br>" +
+                         "Le point $A$ appartient à $(d')$.<br>" +
+                         "Conclusion : Les droites sont <strong>confondues</strong>.</p>"
+        }
+    ];
+
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vos élèves maîtrisent parfaitement les systèmes et la colinéarité dans l'espace !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Quelques erreurs de calcul de systèmes à corriger.";
+        } else {
+            resultMsg.innerHTML = "<strong>Attention !</strong> Réviser les méthodes d'alignement de vecteurs et de résolution de systèmes à 2 inconnues.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        loadQuestion();
+    }
+
+    window.onload = function() {
+        loadQuestion();
+    };
+</script>
+
+</body>
+</html>

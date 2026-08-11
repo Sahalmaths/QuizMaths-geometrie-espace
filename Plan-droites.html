@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Position relative d'une droite et d'un plan</title>
+    
+    <!-- Configuration et chargement de MathJax -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        /* Cadre principal de la carte */
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 650px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Positionnement du logo en haut à droite */
+        .quiz-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 90px;
+            height: auto;
+        }
+
+        /* Compteur de questions */
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        /* Contenu de la question */
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 95px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding-right: 95px;
+        }
+
+        /* Zone des boutons d'action */
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #d0d0d0;
+        }
+
+        /* Style pour le bouton Désactivé */
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Zone interactive contenant les options */
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f7fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        /* Zone de réponse et vérification */
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        /* Écran de résultat final */
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <!-- Image du Logo -->
+     <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <!-- Section Quiz -->
+    <div id="quizContent">
+        <!-- Indication de la question actuelle -->
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+
+        <!-- Énoncé de l'exercice -->
+        <div id="quizHeader" class="quiz-header"></div>
+
+        <div id="questionTitle" class="question-title"></div>
+
+        <!-- Choix multiples -->
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <!-- Explication détaillée -->
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="buttons-container">
+            <button class="btn-action btn-secondary" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <!-- Section Résultat Final -->
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre résultat :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 200px; margin: 0 auto;" onclick="restartQuiz()">Recommencer</button>
+    </div>
+</div>
+
+<script>
+    // Banque de 10 questions sur la position relative d'une droite et d'un plan
+    const questions = [
+        {
+            header: "Soit un plan $(P)$ de vecteur normal $\\vec{n}(a ; b ; c)$ et une droite $(d)$ de vecteur directeur $\\vec{u}(x_u ; y_u ; z_u)$.<br>On constate que le produit scalaire $\\vec{u} \\cdot \\vec{n} = 0$.",
+            title: "Quelle est la position relative de la droite $(d)$ et du plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite $(d)$ est perpendiculaire au plan $(P)$." },
+                { id: "choiceB", text: "B) La droite $(d)$ est parallèle au plan $(P)$ (ou contenue dans celui-ci)." },
+                { id: "choiceC", text: "C) La droite $(d)$ coupe le plan $(P)$ en un unique point." }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Démonstration :</strong></p><p>Le vecteur normal $\\vec{n}$ est orthogonal au plan $(P)$. Si $\\vec{u} \\cdot \\vec{n} = 0$, alors le vecteur directeur $\\vec{u}$ de la droite est orthogonal à $\\vec{n}$, ce qui signifie que la droite $(d)$ est <strong>parallèle au plan $(P)$</strong> (strictement parallèle ou contenue dans le plan).</p>"
+        },
+        {
+            header: "On considère le plan $(P) : 2x - 3y + z - 5 = 0$ et la droite $(d)$ définie par :<br>$$\\begin{cases} x = 1 + t \\\\ y = 2 - t \\\\ z = 3 + t \\end{cases} \\quad (t \\in \\mathbb{R})$$",
+            title: "Quelle est la position relative de la droite $(d)$ et du plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite est strictly parallèle au plan." },
+                { id: "choiceB", text: "B) La droite est contenue dans le plan." },
+                { id: "choiceC", text: "C) La droite est sécante avec le plan." }
+            ],
+            correct: "choiceC",
+            explanation: "<p>Vecteur normal de $(P)$ : $\\vec{n}(2 ; -3 ; 1)$.<br>Vecteur directeur de $(d)$ : $\\vec{u}(1 ; -1 ; 1)$.<br>Calcul du produit scalaire : $\\vec{u} \\cdot \\vec{n} = 2(1) + (-3)(-1) + 1(1) = 2 + 3 + 1 = 6 \\neq 0$.<br>Comme $\\vec{u} \\cdot \\vec{n} \\neq 0$, la droite et le plan sont <strong>sécants</strong> en un unique point.</p>"
+        },
+        {
+            header: "On donne le plan $(P) : x + 2y - z + 4 = 0$ et la droite $(d)$ définie par :<br>$$\\begin{cases} x = 2t \\\\ y = 1 - t \\\\ z = 3 \\end{cases} \\quad (t \\in \\mathbb{R})$$",
+            title: "Quelle est la position relative de la droite $(d)$ et du plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite $(d)$ est parallèle au plan $(P)$." },
+                { id: "choiceB", text: "B) La droite $(d)$ est sécante au plan $(P)$." },
+                { id: "choiceC", text: "C) La droite $(d)$ est perpendiculaire au plan $(P)$." }
+            ],
+            correct: "choiceA",
+            explanation: "<p>Vecteur normal de $(P)$ : $\\vec{n}(1 ; 2 ; -1)$.<br>Vecteur directeur de $(d)$ : $\\vec{u}(2 ; -1 ; 0)$.<br>$\\vec{u} \\cdot \\vec{n} = 1(2) + 2(-1) + (-1)(0) = 2 - 2 + 0 = 0$.<br>Le produit scalaire est nul, donc la droite est <strong>parallèle au plan</strong>.</p>"
+        },
+        {
+            header: "On considère la droite $(d) : \\begin{cases} x = 1 + 2t \\\\ y = -1 + t \\\\ z = 2 - t \\end{cases}$ et le plan $(P) : x + y + 3z - 6 = 0$.<br>On cherche le point d'intersection $A$ entre $(d)$ et $(P)$.",
+            title: "Quel est le point d'intersection $A$ entre la droite $(d)$ et le plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $A(3 ; 0 ; 1)$" },
+                { id: "choiceB", text: "B) $A(1 ; -1 ; 2)$" },
+                { id: "choiceC", text: "C) $A(5 ; 1 ; 0)$" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Méthode de résolution du système :</strong><br>On injecte les équations de $(d)$ dans l'équation de $(P)$ :<br>$(1 + 2t) + (-1 + t) + 3(2 - t) - 6 = 0$<br>$\\iff 1 + 2t - 1 + t + 6 - 3t - 6 = 0$<br>$\\iff 0 = 0$.<br>Toutes les valeurs de $t$ vérifient l'équation, donc la droite est entièrement contenue dans le plan. En particulier pour $t = 1$, le point $A(3 ; 0 ; 1)$ appartient bien à la droite et au plan.</p>"
+        },
+        {
+            header: "Soit le plan $(P) : 3x - y + 2z - 1 = 0$ et la droite $(d) : \\begin{cases} x = t \\\\ y = 1 + 3t \\\\ z = 1 \\end{cases} \\quad (t \\in \\mathbb{R})$.",
+            title: "La droite $(d)$ est-elle contenue dans le plan $(P)$ ou strictement parallèle ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite $(d)$ est contenue dans le plan $(P)$." },
+                { id: "choiceB", text: "B) La droite $(d)$ est strictement parallèle au plan $(P)$." },
+                { id: "choiceC", text: "C) La droite $(d)$ est sécante au plan $(P)$." }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Résolution algébrique :</strong><br>Injectons la représentation paramétrique de $(d)$ dans l'équation du plan $(P)$ :<br>$3(t) - (1 + 3t) + 2(1) - 1 = 0$<br>$\\iff 3t - 1 - 3t + 2 - 1 = 0$<br>$\\iff 0t + 0 = 0 \\iff 0 = 0$.<br>Testons un point de $(d)$ pour $t=0$ : $B(0 ; 1 ; 1)$.<br>Remplaçons $B$ dans $(P)$ : $3(0) - 1 + 2(1) - 1 = 0$. Le point $B$ est dans le plan, donc $(d)$ est parallèle. Si l'on modifie la constante du plan pour obtenir une impossibilité $0t = c (c \\neq 0)$, la droite est <strong>strictement parallèle</strong>.</p>"
+        },
+        {
+            header: "Soit un plan $(P) : ax + by + cz + d = 0$ de vecteur normal $\\vec{n}(a ; b ; c)$ et une droite $(d)$ de vecteur directeur $\\vec{u}$.",
+            title: "Quelle condition indique que la droite $(d)$ est **perpendiculaire** au plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) $\\vec{u} \\cdot \\vec{n} = 0$" },
+                { id: "choiceB", text: "B) Les vecteurs $\\vec{u}$ et $\\vec{n}$ sont colinéaires." },
+                { id: "choiceC", text: "C) Le produit vectoriel est non nul." }
+            ],
+            correct: "choiceB",
+            explanation: "<p>Un vecteur normal $\\vec{n}$ est orthogonal au plan. Pour qu'une droite $(d)$ soit perpendiculaire au plan, son vecteur directeur $\\vec{u}$ doit avoir la même direction que $\\vec{n}$, donc $\\vec{u}$ et $\\vec{n}$ doivent être <strong>colinéaires</strong>.</p>"
+        },
+        {
+            header: "On donne le plan $(P) : 2x - y + 4z - 7 = 0$ et la droite $(d) : \\begin{cases} x = -4t \\\\ y = 2t \\\\ z = -8t \\end{cases} \\quad (t \\in \\mathbb{R})$.",
+            title: "Quelle est la position relative de la droite $(d)$ par rapport au plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite est perpendiculaire au plan." },
+                { id: "choiceB", text: "B) La droite est parallèle au plan." },
+                { id: "choiceC", text: "C) La droite est contenue dans le plan." }
+            ],
+            correct: "choiceA",
+            explanation: "<p>Le vecteur normal du plan est $\\vec{n}(2 ; -1 ; 4)$.<br>Le vecteur directeur de la droite est $\\vec{u}(-4 ; 2 ; -8)$.<br>On remarque que $\\vec{u} = -2\\vec{n}$. Les deux vecteurs sont colinéaires, donc la droite $(d)$ est <strong>perpendiculaire au plan $(P)$</strong>.</p>"
+        },
+        {
+            header: "Pour étudier l'intersection entre une droite $(d)$ de représentation paramétrique et un plan $(P)$ d'équation $ax + by + cz + d = 0$, quelle est la méthode usuelle ?",
+            title: "Quelle démarche algébrique permet de trouver le point d'intersection ?",
+            choices: [
+                { id: "choiceA", text: "A) On remplace $x, y, z$ de l'équation du plan par les expressions en fonction de $t$ de la droite." },
+                { id: "choiceB", text: "B) On égalise les équations composante par composante sans paramètre." },
+                { id: "choiceC", text: "C) On calcule uniquement la norme des vecteurs." }
+            ],
+            correct: "choiceA",
+            explanation: "<p>On substitue les expressions $x(t), y(t), z(t)$ de la droite dans l'équation cartésienne $a x(t) + b y(t) + c z(t) + d = 0$ pour résoudre l'équation d'inconnue $t$.</p>"
+        },
+        {
+            header: "On considère la droite $(d) : \\begin{cases} x = 2 - t \\\\ y = 3 + 2t \\\\ z = 1 + t \\end{cases}$ et le plan $(P) : 2x + y - z - 6 = 0$.",
+            title: "En combien de points la droite $(d)$ coupe-t-elle le plan $(P)$ ?",
+            choices: [
+                { id: "choiceA", text: "A) En aucun point (strictement parallèle)." },
+                { id: "choiceB", text: "B) En une infinité de points (droite contenue dans le plan)." },
+                { id: "choiceC", text: "C) En un unique point." }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Résolution détaillée du système :</strong><br>Substituons les coordonnées de $(d)$ dans l'équation du plan $(P)$ :<br>$2(2 - t) + (3 + 2t) - (1 + t) - 6 = 0$<br>$\\iff 4 - 2t + 3 + 2t - 1 - t - 6 = 0$<br>$\\iff (4 + 3 - 1 - 6) + (-2t + 2t - t) = 0$<br>$\\iff 0 - t = 0 \\iff t = 0$.<br>L'équation admet une **unique solution** $t = 0$.<br>En remplaçant $t = 0$ dans $(d)$, on trouve les coordonnées du seul point d'intersection : $M(2 ; 3 ; 1)$. La droite coupe donc le plan en <strong>un unique point</strong>.</p>"
+        },
+        {
+            header: "Si en injectant la représentation paramétrique d'une droite dans l'équation cartésienne d'un plan on obtient une égalité de la forme $0 \\cdot t = 5$ (impossible), que conclut-on ?",
+            title: "Quelle est la position relative de la droite et du plan ?",
+            choices: [
+                { id: "choiceA", text: "A) La droite est contenue dans le plan." },
+                { id: "choiceB", text: "B) La droite est strictement parallèle au plan." },
+                { id: "choiceC", text: "C) La droite est perpendiculaire au plan." }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Interprétation algébrique :</strong><br>L'équation $0 \\cdot t = 5$ n'a aucune solution dans $\\mathbb{R}$. Aucun point de la droite ne vérifie l'équation du plan. La droite et le plan n'ont aucun point commun : la droite est <strong>strictement parallèle au plan</strong>.</p>"
+        }
+    ];
+
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var userAnswers = new Array(questions.length).fill(null);
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        // Gestion de l'état du bouton Retour
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+
+        // Restauration de l'état de la réponse si la question a déjà été traitée
+        if (userAnswers[currentQuestionIndex] !== null) {
+            currentChoice = userAnswers[currentQuestionIndex].choice;
+            document.getElementById("interactiveZone").style.display = "block";
+            selectChoice(currentChoice);
+            
+            var validationBox = document.getElementById("validationBox");
+            var validationText = document.getElementById("validationText");
+            
+            if (currentChoice === q.correct) {
+                validationBox.className = "validation-box correct";
+                validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse.";
+                document.getElementById("btnNext").disabled = false;
+            } else {
+                validationBox.className = "validation-box incorrect";
+                validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse.";
+                document.getElementById("btnNext").disabled = true;
+            }
+            validationBox.style.display = "block";
+        } else {
+            document.getElementById("interactiveZone").style.display = "none";
+            document.getElementById("validationBox").style.display = "none";
+            document.getElementById("btnNext").disabled = true;
+            currentChoice = null;
+        }
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        var isCorrect = (currentChoice === q.correct);
+
+        userAnswers[currentQuestionIndex] = {
+            choice: currentChoice,
+            correct: isCorrect
+        };
+
+        if (isCorrect) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function showFinalResults() {
+        score = userAnswers.filter(a => a && a.correct).length;
+
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Parfait !</strong> Vos élèves maîtrisent très bien la position relative des droites et des plans !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Relisez attentivement les méthodes de calcul d'intersection.";
+        } else {
+            resultMsg.innerHTML = "<strong>Attention !</strong> Réviser l'utilisation des vecteurs normaux et des systèmes paramétriques.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = new Array(questions.length).fill(null);
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        loadQuestion();
+    }
+
+    window.onload = function() {
+        loadQuestion();
+    };
+</script>
+
+</body>
+</html>

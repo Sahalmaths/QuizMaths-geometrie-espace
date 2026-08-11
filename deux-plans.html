@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Positions relatives de deux plans dans l'espace</title>
+    
+    <!-- Configuration et chargement de MathJax -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 650px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 90px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f7fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+     <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre résultat :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 200px; margin: 0 auto;" onclick="restartQuiz()">Recommencer</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 2x - y + 3z - 5 = 0$ &nbsp; et &nbsp; $(P') : -4x + 2y - 6z + 10 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Sécantes non perpendiculaires" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Confondus" }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(2 ; -1 ; 3)$ et $\\vec{n}'(-4 ; 2 ; -6)$.<br>" +
+                         "On a $\\vec{n}' = -2\\vec{n}$, les vecteurs sont donc <strong>colinéaires</strong> (les plans sont parallèles).<br>" +
+                         "2. Équations : En multipliant l'équation de $(P)$ par $-2$, on obtient $-4x + 2y - 6z + 10 = 0$, ce qui correspond exactement à l'équation de $(P')$.<br>" +
+                         "Conclusion : $(P)$ et $(P')$ sont <strong>confondus</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : x + 2y - 2z + 1 = 0$ &nbsp; et &nbsp; $(P') : 3x + 6y - 6z - 4 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Strictement parallèles" },
+                { id: "choiceB", text: "B) Confondus" },
+                { id: "choiceC", text: "C) Perpendiculaires" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(1 ; 2 ; -2)$ et $\\vec{n}'(3 ; 6 ; -6)$.<br>" +
+                         "On constate que $\\vec{n}' = 3\\vec{n}$, les vecteurs normaux sont colinéaires.<br>" +
+                         "2. Terme constant : Si l'on multiplie l'équation de $(P)$ par $3$, on obtient $3x + 6y - 6z + 3 = 0 \\neq 3x + 6y - 6z - 4 = 0$.<br>" +
+                         "Conclusion : Les plans n'ont aucun point commun, ils sont <strong>strictement parallèles</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 3x - y + 2z - 1 = 0$ &nbsp; et &nbsp; $(P') : x + 5y + z + 2 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Perpendiculaires" },
+                { id: "choiceB", text: "B) Sécants non perpendiculaires" },
+                { id: "choiceC", text: "C) Strictement parallèles" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(3 ; -1 ; 2)$ et $\\vec{n}'(1 ; 5 ; 1)$.<br>" +
+                         "Les coordonnées ne sont pas proportionnelles (ex: $3/1 \\neq -1/5$), donc $\\vec{n}$ et $\\vec{n}'$ ne sont pas colinéaires (les plans sont sécants).<br>" +
+                         "2. Produit scalaire : $\\vec{n} \\cdot \\vec{n}' = (3)(1) + (-1)(5) + (2)(1) = 3 - 5 + 2 = 0$.<br>" +
+                         "Comme le produit scalaire est nul, les vecteurs normaux sont orthogonaux.<br>" +
+                         "Conclusion : Les plans $(P)$ et $(P')$ sont <strong>perpendiculaires</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 2x + y - z + 4 = 0$ &nbsp; et &nbsp; $(P') : x - 3y + z - 2 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondus" },
+                { id: "choiceB", text: "B) Perpendiculaires" },
+                { id: "choiceC", text: "C) Sécants non perpendiculaires" }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(2 ; 1 ; -1)$ et $\\vec{n}'(1 ; -3 ; 1)$.<br>" +
+                         "Ils ne sont pas colinéaires car leurs coordonnées ne sont pas proportionnelles.<br>" +
+                         "2. Produit scalaire : $\\vec{n} \\cdot \\vec{n}' = (2)(1) + (1)(-3) + (-1)(1) = 2 - 3 - 1 = -2 \\neq 0$.<br>" +
+                         "Les vecteurs normaux ne sont pas orthogonaux.<br>" +
+                         "Conclusion : Les plans sont <strong>sécants non perpendiculaires</strong> (leur intersection est une droite).</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : x - y + 4z - 3 = 0$ &nbsp; et &nbsp; $(P') : -3x + 3y - 12z + 9 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondus" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Sécants non perpendiculaires" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(1 ; -1 ; 4)$ et $\\vec{n}'(-3 ; 3 ; -12)$.<br>" +
+                         "On remarque que $\\vec{n}' = -3\\vec{n}$, ils sont colinéaires.<br>" +
+                         "2. En multipliant l'équation entière de $(P)$ par $-3$, on obtient $-3x + 3y - 12z + 9 = 0$, soit l'équation exacte de $(P')$.<br>" +
+                         "Conclusion : Les plans sont <strong>confondus</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 4x - 2y + 6z - 1 = 0$ &nbsp; et &nbsp; $(P') : 2x - y + 3z + 5 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Sécants non perpendiculaires" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Confondus" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(4 ; -2 ; 6)$ et $\\vec{n}'(2 ; -1 ; 3)$.<br>" +
+                         "On a $\\vec{n} = 2\\vec{n}'$, donc les vecteurs normaux sont colinéaires.<br>" +
+                         "2. En divisant l'équation de $(P)$ par $2$, on obtient $2x - y + 3z - 0{,}5 = 0$. Le terme constant est $-0{,}5$, alors que celui de $(P')$ est $+5$.<br>" +
+                         "Conclusion : Les plans sont <strong>strictement parallèles</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 5x - 2y + z - 3 = 0$ &nbsp; et &nbsp; $(P') : x + y - 3z + 7 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Perpendiculaires" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Sécants non perpendiculaires" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(5 ; -2 ; 1)$ et $\\vec{n}'(1 ; 1 ; -3)$.<br>" +
+                         "Ils ne sont pas colinéaires.<br>" +
+                         "2. Produit scalaire : $\\vec{n} \\cdot \\vec{n}' = (5)(1) + (-2)(1) + (1)(-3) = 5 - 2 - 3 = 0$.<br>" +
+                         "Les vecteurs normaux sont orthogonaux.<br>" +
+                         "Conclusion : Les plans $(P)$ et $(P')$ sont <strong>perpendiculaires</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 2x + 3y + z - 1 = 0$ &nbsp; et &nbsp; $(P') : x - y + 2z + 3 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Perpendiculaires" },
+                { id: "choiceB", text: "B) Sécants non perpendiculaires" },
+                { id: "choiceC", text: "C) Strictement parallèles" }
+            ],
+            correct: "choiceB",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(2 ; 3 ; 1)$ et $\\vec{n}'(1 ; -1 ; 2)$.<br>" +
+                         "Les coordonnées ne sont pas proportionnelles, donc ils ne sont pas colinéaires.<br>" +
+                         "2. Produit scalaire : $\\vec{n} \\cdot \\vec{n}' = (2)(1) + (3)(-1) + (1)(2) = 2 - 3 + 2 = 1 \\neq 0$.<br>" +
+                         "Le produit scalaire n'est pas nul, les plans ne sont pas orthogonaux.<br>" +
+                         "Conclusion : Les plans sont <strong>sécants non perpendiculaires</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : x + 4y - z + 2 = 0$ &nbsp; et &nbsp; $(P') : -2x - 8y + 2z + 5 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondus" },
+                { id: "choiceB", text: "B) Perpendiculaires" },
+                { id: "choiceC", text: "C) Strictement parallèles" }
+            ],
+            correct: "choiceC",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(1 ; 4 ; -1)$ et $\\vec{n}'(-2 ; -8 ; 2)$.<br>" +
+                         "On a $\\vec{n}' = -2\\vec{n}$, les vecteurs sont donc colinéaires.<br>" +
+                         "2. En multipliant $(P)$ par $-2$, on obtient $-2x - 8y + 2z - 4 = 0$. En comparant avec $(P')$, le terme constant diffère ($-4 \\neq 5$).<br>" +
+                         "Conclusion : Les plans sont <strong>strictement parallèles</strong>.</p>"
+        },
+        {
+            header: "On considère les plans $(P)$ et $(P')$ d'équations cartésiennes :<br>" +
+                    "$(P) : 3x - 6y + 9z - 12 = 0$ &nbsp; et &nbsp; $(P') : x - 2y + 3z - 4 = 0$",
+            title: "Quelle est la position relative des plans $(P)$ et $(P')$ ?",
+            choices: [
+                { id: "choiceA", text: "A) Confondus" },
+                { id: "choiceB", text: "B) Strictement parallèles" },
+                { id: "choiceC", text: "C) Sécants non perpendiculaires" }
+            ],
+            correct: "choiceA",
+            explanation: "<p><strong>Analyse :</strong><br>" +
+                         "1. Vecteurs normaux : $\\vec{n}(3 ; -6 ; 9)$ et $\\vec{n}'(1 ; -2 ; 3)$.<br>" +
+                         "On observe que $\\vec{n} = 3\\vec{n}'$, donc les vecteurs normaux sont colinéaires.<br>" +
+                         "2. En divisant l'équation de $(P)$ par $3$, on obtient exactement $x - 2y + 3z - 4 = 0$, qui est l'équation de $(P')$.<br>" +
+                         "Conclusion : Les plans $(P)$ et $(P')$ sont <strong>confondus</strong>.</p>"
+        }
+    ];
+
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Vérifiez la colinéarité ou le produit scalaire des vecteurs normaux !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> La géométrie vectorielle des plans n'a plus de secret !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Quelques confusions mineures entre plans parallèles et confondus.";
+        } else {
+            resultMsg.innerHTML = "<strong>Attention !</strong> Réviser les conditions de colinéarité et d'orthogonalité des vecteurs normaux.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        loadQuestion();
+    }
+
+    window.onload = function() {
+        loadQuestion();
+    };
+</script>
+
+</body>
+</html>
