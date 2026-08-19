@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Congruences et Arithmétique (Terminale S)</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 75px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f0fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+  <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre score final :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 260px; margin: 0 auto;" onclick="restartQuiz()">Recommencer le Quiz</button>
+    </div>
+</div>
+
+<script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function modInverse(a, m) {
+        a = ((a % m) + m) % m;
+        for (let x = 1; x < m; x++) {
+            if ((a * x) % m === 1) return x;
+        }
+        return 1;
+    }
+
+    function modExp(base, exp, mod) {
+        let result = 1;
+        base = base % mod;
+        while (exp > 0) {
+            if (exp % 2 === 1) result = (result * base) % mod;
+            exp = Math.floor(exp / 2);
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    function shuffleArray(array) {
+        var arr = array.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function generateDynamicQuestions() {
+        let qList = [];
+
+        // Q1: Division euclidienne
+        let a1 = getRandomInt(1000, 9999);
+        let b1 = getRandomInt(6, 13);
+        let q1 = Math.floor(a1 / b1);
+        let r1 = a1 % b1;
+        let c1 = shuffleArray([
+            { id: "choiceA", text: "A) $r = " + r1 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $r = " + ((r1 + 2) % b1) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $r = " + ((r1 + 4) % b1) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On effectue la division euclidienne de $" + a1 + "$ par $" + b1 + "$.",
+            title: "Quel est le reste $r$ de cette division ?",
+            choices: c1,
+            correct: c1.find(c => c.isCorrect).id,
+            explanation: "<p>On a $" + a1 + " = " + b1 + " \\times " + q1 + " + " + r1 + "$ avec $0 \\le " + r1 + " < " + b1 + "$.<br>Le reste est donc $" + r1 + "$.</p>"
+        });
+
+        // Q2: Définition de la congruence
+        let mod2 = getRandomInt(5, 9);
+        let k2 = getRandomInt(10, 40);
+        let r2 = getRandomInt(1, mod2 - 1);
+        let val2 = k2 * mod2 + r2;
+        let c2 = shuffleArray([
+            { id: "choiceA", text: "A) $" + r2 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + ((r2 + 1) % mod2) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + ((r2 + 2) % mod2) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le nombre $a = " + val2 + "$.",
+            title: "Compléter : $" + val2 + " \\equiv ... \\quad [" + mod2 + "]$ avec $0 \\le r < " + mod2 + "$.",
+            choices: c2,
+            correct: c2.find(c => c.isCorrect).id,
+            explanation: "<p>Comme $" + val2 + " = " + mod2 + " \\times " + k2 + " + " + r2 + "$, la différence $" + val2 + " - " + r2 + "$ est un multiple de $" + mod2 + "$.<br>Donc $" + val2 + " \\equiv " + r2 + " \\quad [" + mod2 + "]$.</p>"
+        });
+
+        // Q3: Compatibilité avec l'addition
+        let n3 = getRandomInt(5, 12);
+        let r3_1 = getRandomInt(1, n3 - 1);
+        let r3_2 = getRandomInt(1, n3 - 1);
+        let ans3 = (r3_1 + r3_2) % n3;
+        let c3 = shuffleArray([
+            { id: "choiceA", text: "A) $" + ans3 + " \\quad [" + n3 + "]$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + ((ans3 + 1) % n3) + " \\quad [" + n3 + "]$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + ((ans3 + 2) % n3) + " \\quad [" + n3 + "]$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soient deux entiers $a$ et $b$ tels que $a \\equiv " + r3_1 + " \\quad [" + n3 + "]$ et $b \\equiv " + r3_2 + " \\quad [" + n3 + "]$.",
+            title: "À quel entier $a + b$ est-il congru modulo $" + n3 + "$ ?",
+            choices: c3,
+            correct: c3.find(c => c.isCorrect).id,
+            explanation: "<p>Par compatibilité de la congruence avec l'addition :<br>$a + b \\equiv " + r3_1 + " + " + r3_2 + " \\equiv " + (r3_1 + r3_2) + " \\equiv " + ans3 + " \\quad [" + n3 + "]$.</p>"
+        });
+
+        // Q4: Compatibilité avec la multiplication
+        let n4 = getRandomInt(6, 11);
+        let r4_1 = getRandomInt(2, n4 - 1);
+        let r4_2 = getRandomInt(2, n4 - 1);
+        let ans4 = (r4_1 * r4_2) % n4;
+        let c4 = shuffleArray([
+            { id: "choiceA", text: "A) $" + ans4 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + ((ans4 + 1) % n4) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + ((ans4 + 3) % n4) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Si $x \\equiv " + r4_1 + " \\quad [" + n4 + "]$ et $y \\equiv " + r4_2 + " \\quad [" + n4 + "]$.",
+            title: "Déterminer le reste de $x \\times y$ modulo $" + n4 + "$.",
+            choices: c4,
+            correct: c4.find(c => c.isCorrect).id,
+            explanation: "<p>Par compatibilité avec la multiplication :<br>$x \\times y \\equiv " + r4_1 + " \\times " + r4_2 + " = " + (r4_1 * r4_2) + " \\equiv " + ans4 + " \\quad [" + n4 + "]$.</p>"
+        });
+
+        // Q5: Puissance simple modulo 7
+        let base5 = getRandomInt(2, 5);
+        let exp5 = getRandomInt(12, 99);
+        let ans5 = modExp(base5, exp5, 7);
+        let c5 = shuffleArray([
+            { id: "choiceA", text: "A) $" + ans5 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + ((ans5 + 1) % 7) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + ((ans5 + 2) % 7) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On étudie la puissance $" + base5 + "^{" + exp5 + "}$ modulo $7$.",
+            title: "Quel est le reste de la division euclidienne de $" + base5 + "^{" + exp5 + "}$ par $7$ ?",
+            choices: c5,
+            correct: c5.find(c => c.isCorrect).id,
+            explanation: "<p>Par calcul direct des puissances successives modulo 7, on obtient :<br>$" + base5 + "^{" + exp5 + "} \\equiv " + ans5 + " \\quad [7]$.</p>"
+        });
+
+        // Q6: Inverse modulo 26
+        let candidates6 = [3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25];
+        let a6 = candidates6[getRandomInt(0, candidates6.length - 1)];
+        let ans6 = modInverse(a6, 26);
+        let c6 = shuffleArray([
+            { id: "choiceA", text: "A) $" + ans6 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + ((ans6 + 2) % 26) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + ((ans6 + 4) % 26) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On cherche un entier $x$ tel que $" + a6 + "x \\equiv 1 \\quad [26]$.",
+            title: "Déterminer l'inverse de $" + a6 + "$ modulo $26$.",
+            choices: c6,
+            correct: c6.find(c => c.isCorrect).id,
+            explanation: "<p>En vérifiant les multiples : $" + a6 + " \\times " + ans6 + " = " + (a6 * ans6) + " = 26 \\times " + Math.floor((a6 * ans6)/26) + " + 1 \\equiv 1 \\quad [26]$.<br>L'inverse est donc $" + ans6 + "$.</p>"
+        });
+
+        // Q7: Équation ax = b [5]
+        let a7 = getRandomInt(2, 4);
+        let b7 = getRandomInt(1, 4);
+        let inv7 = modInverse(a7, 5);
+        let ans7 = (inv7 * b7) % 5;
+        let c7 = shuffleArray([
+            { id: "choiceA", text: "A) $x \\equiv " + ans7 + " \\quad [5]$", isCorrect: true },
+            { id: "choiceB", text: "B) $x \\equiv " + ((ans7 + 1) % 5) + " \\quad [5]$", isCorrect: false },
+            { id: "choiceC", text: "C) $x \\equiv " + ((ans7 + 2) % 5) + " \\quad [5]$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère l'équation dans $\\mathbb{Z}$ : $" + a7 + "x \\equiv " + b7 + " \\quad [5]$.",
+            title: "Quelles sont les solutions de cette équation ?",
+            choices: c7,
+            correct: c7.find(c => c.isCorrect).id,
+            explanation: "<p>L'inverse de $" + a7 + "$ modulo 5 est $" + inv7 + "$.<br>En multipliant par $" + inv7 + "$ : $x \\equiv " + inv7 + " \\times " + b7 + " \\equiv " + ans7 + " \\quad [5]$.</p>"
+        });
+
+        // Q8: Divisibilité n^3 - n
+        let c8 = shuffleArray([
+            { id: "choiceA", text: "A) $6$", isCorrect: true },
+            { id: "choiceB", text: "B) $5$", isCorrect: false },
+            { id: "choiceC", text: "C) $4$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère l'expression $A(n) = n^3 - n = n(n-1)(n+1)$ pour tout $n \\in \\mathbb{N}$.",
+            title: "Par quel nombre $A(n)$ est-il toujours divisible ?",
+            choices: c8,
+            correct: c8.find(c => c.isCorrect).id,
+            explanation: "<p>$n(n-1)(n+1)$ est le produit de 3 entiers consécutifs. Il est donc divisible par $2$ et par $3$, donc par $6$.</p>"
+        });
+
+        // Q9: Codage Affine Chiffrement
+        let m9 = getRandomInt(0, 25);
+        let p9 = (9 * m9 + 5) % 26;
+        let c9 = shuffleArray([
+            { id: "choiceA", text: "A) $p = " + p9 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $p = " + ((p9 + 3) % 26) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $p = " + ((p9 + 5) % 26) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le codage affine défini par $p \\equiv 9m + 5 \\quad [26]$.",
+            title: "Si la lettre initiale a pour rang $m = " + m9 + "$, quel est le rang $p$ de la lettre codée ?",
+            choices: c9,
+            correct: c9.find(c => c.isCorrect).id,
+            explanation: "<p>$p \\equiv 9 \\times " + m9 + " + 5 = " + (9 * m9 + 5) + " \\equiv " + p9 + " \\quad [26]$.</p>"
+        });
+
+        // Q10: Division par simplification
+        let c10 = shuffleArray([
+            { id: "choiceA", text: "A) Faux, c'est faux en général", isCorrect: true },
+            { id: "choiceB", text: "B) Vrai, c'est toujours possible", isCorrect: false },
+            { id: "choiceC", text: "C) Vrai uniquement si $k$ est impair", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Considérons l'affirmation : « Si $ka \\equiv kb \\quad [n]$, alors $a \\equiv b \\quad [n]$ ».",
+            title: "Cette affirmation est-elle vraie ou fausse ?",
+            choices: c10,
+            correct: c10.find(c => c.isCorrect).id,
+            explanation: "<p>C'est faux en général. On ne peut simplifier par $k$ que si $\\text{PGCD}(k, n) = 1$.</p>"
+        });
+
+        return qList;
+    }
+
+    function initQuiz() {
+        questions = generateDynamicQuestions();
+        currentQuestionIndex = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vos élèves maîtrisent parfaitement les congruences et l'arithmétique !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Les notions fondamentales sont acquises, attention aux calculs d'inverses et de puissances.";
+        } else {
+            resultMsg.innerHTML = "<strong>À revoir !</strong> Reprenez les propriétés fondamentales du cours sur les congruences et le chiffrement.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        initQuiz();
+    }
+
+    window.onload = function() {
+        initQuiz();
+    };
+</script>
+
+</body>
+</html>
