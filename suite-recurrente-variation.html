@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Suites Récurrentes et Variations (Terminale S)</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 75px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f0fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+  <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre score final :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 260px; margin: 0 auto;" onclick="restartQuiz()">Recommencer le Quiz</button>
+    </div>
+</div>
+
+<script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(array) {
+        var arr = array.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function generateDynamicQuestions() {
+        let qList = [];
+
+        // Q1: Calcul des premiers termes u_{n+1} = a*u_n + b
+        let a1 = getRandomInt(2, 4);
+        let b1 = getRandomInt(1, 5);
+        let u0_1 = getRandomInt(1, 5);
+        let u1_val = a1 * u0_1 + b1;
+        let u2_val = a1 * u1_val + b1;
+
+        let c1 = shuffleArray([
+            { id: "choiceA", text: "A) $u_1 = " + u1_val + "$ et $u_2 = " + u2_val + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $u_1 = " + (u1_val + 2) + "$ et $u_2 = " + (u2_val + 4) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $u_1 = " + u1_val + "$ et $u_2 = " + (u2_val + a1) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la suite $(u_n)$ définie par $u_0 = " + u0_1 + "$ et pour tout $n \\in \\mathbb{N}$, $u_{n+1} = " + a1 + "u_n + " + b1 + "$.",
+            title: "Quelles sont les valeurs de $u_1$ et $u_2$ ?",
+            choices: c1,
+            correct: c1.find(c => c.isCorrect).id,
+            explanation: "<p>$u_1 = " + a1 + " \\times " + u0_1 + " + " + b1 + " = " + u1_val + "$<br>$u_2 = " + a1 + " \\times " + u1_val + " + " + b1 + " = " + u2_val + "$.</p>"
+        });
+
+        // Q2: Sens de variation d'après u_{n+1} - u_n
+        let d2 = getRandomInt(2, 8) * (Math.random() < 0.5 ? 1 : -1);
+        let isIncreasing2 = d2 > 0;
+        let c2 = shuffleArray([
+            { id: "choiceA", text: isIncreasing2 ? "A) Strictement croissante" : "A) Strictement décroissante", isCorrect: true },
+            { id: "choiceB", text: isIncreasing2 ? "B) Strictement décroissante" : "B) Strictement croissante", isCorrect: false },
+            { id: "choiceC", text: "C) Non monotone", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit une suite $(u_n)$ vérifiant pour tout $n \\in \\mathbb{N}$, $u_{n+1} - u_n = " + d2 + "$.",
+            title: "Quel est le sens de variation de la suite $(u_n)$ ?",
+            choices: c2,
+            correct: c2.find(c => c.isCorrect).id,
+            explanation: "<p>Pour tout $n \\in \\mathbb{N}$, $u_{n+1} - u_n = " + d2 + (d2 > 0 ? " > 0" : " < 0") + "$.<br>La suite est donc " + (d2 > 0 ? "strictement croissante" : "strictement décroissante") + ".</p>"
+        });
+
+        // Q3: Sens de variation par quotient
+        let q3_num = getRandomInt(1, 4);
+        let q3_den = getRandomInt(q3_num + 1, q3_num + 5);
+        let isQuoSmaller = true;
+        if (Math.random() < 0.5) {
+            let temp = q3_num;
+            q3_num = q3_den;
+            q3_den = temp;
+            isQuoSmaller = false;
+        }
+        let c3 = shuffleArray([
+            { id: "choiceA", text: isQuoSmaller ? "A) Strictement décroissante" : "A) Strictement croissante", isCorrect: true },
+            { id: "choiceB", text: isQuoSmaller ? "B) Strictement croissante" : "B) Strictement décroissante", isCorrect: false },
+            { id: "choiceC", text: "C) Constante égale à 1", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $(u_n)$ une suite à termes strictement positifs telle que $u_{n+1} = \\frac{" + q3_num + "}{" + q3_den + "} u_n$ pour tout $n \\in \\mathbb{N}$.",
+            title: "Déterminer la monotonie de la suite $(u_n)$.",
+            choices: c3,
+            correct: c3.find(c => c.isCorrect).id,
+            explanation: "<p>Comme $u_n > 0$, on étudie le quotient $\\frac{u_{n+1}}{u_n} = \\frac{" + q3_num + "}{" + q3_den + "}" + (isQuoSmaller ? " < 1" : " > 1") + "$.<br>La suite est donc " + (isQuoSmaller ? "strictement décroissante" : "strictement croissante") + ".</p>"
+        });
+
+        // Q4: Variation via f(x)
+        let alpha4 = getRandomInt(2, 6);
+        let beta4 = getRandomInt(1, 9);
+        let c4 = shuffleArray([
+            { id: "choiceA", text: "A) $(u_n)$ est croissante", isCorrect: true },
+            { id: "choiceB", text: "B) $(u_n)$ est décroissante", isCorrect: false },
+            { id: "choiceC", text: "C) On ne peut pas conclure sans connaître $u_0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = " + alpha4 + "x + " + beta4 + "$ une fonction strictement croissante sur $\\mathbb{R}$. Soit $u_{n+1} = f(u_n)$ avec $u_0 \\le u_1$.",
+            title: "Que peut-on dire du sens de variation de $(u_n)$ par récurrence ?",
+            choices: c4,
+            correct: c4.find(c => c.isCorrect).id,
+            explanation: "<p>Comme $f$ est croissante et $u_0 \\le u_1$, une récurrence immédiate montre que $u_n \\le u_{n+1}$ pour tout $n \\in \\mathbb{N}$.<br>La suite $(u_n)$ est donc croissante.</p>"
+        });
+
+        // Q5: Suite auxiliaire v_n = u_n - alpha
+        let a5 = getRandomInt(2, 5);
+        let b5 = getRandomInt(1, 8) * (a5 - 1);
+        let alpha5 = - Math.floor(b5 / (a5 - 1));
+        
+        let c5 = shuffleArray([
+            { id: "choiceA", text: "A) $v_{n+1} = " + a5 + " v_n$", isCorrect: true },
+            { id: "choiceB", text: "B) $v_{n+1} = " + (a5 + 1) + " v_n$", isCorrect: false },
+            { id: "choiceC", text: "C) $v_{n+1} = v_n + " + a5 + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $u_{n+1} = " + a5 + "u_n + " + b5 + "$ et $v_n = u_n - (" + alpha5 + ")$.",
+            title: "Quelle relation de récurrence vérifie la suite $(v_n)$ ?",
+            choices: c5,
+            correct: c5.find(c => c.isCorrect).id,
+            explanation: "<p>$v_{n+1} = u_{n+1} - (" + alpha5 + ") = " + a5 + "u_n + " + b5 + " - (" + alpha5 + ") = " + a5 + "v_n$.<br>$(v_n)$ est donc géométrique de raison $" + a5 + "$.</p>"
+        });
+
+        // Q6: Terme général u_n = u_0 + n*r
+        let u0_6 = getRandomInt(1, 10);
+        let r6 = getRandomInt(2, 7);
+        let n6 = getRandomInt(10, 50);
+        let ans6 = u0_6 + n6 * r6;
+
+        let c6 = shuffleArray([
+            { id: "choiceA", text: "A) $u_{" + n6 + "} = " + ans6 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $u_{" + n6 + "} = " + (ans6 + r6) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $u_{" + n6 + "} = " + (ans6 - 2) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la suite arithmétique $(u_n)$ de premier terme $u_0 = " + u0_6 + "$ et de raison $r = " + r6 + "$.",
+            title: "Calculer la valeur exacte de $u_{" + n6 + "}$.",
+            choices: c6,
+            correct: c6.find(c => c.isCorrect).id,
+            explanation: "<p>Pour une suite arithmétique, $u_n = u_0 + n \\times r$.<br>Donc $u_{" + n6 + "} = " + u0_6 + " + " + n6 + " \\times " + r6 + " = " + ans6 + "$.</p>"
+        });
+
+        // Q7: Monotonie et convergence
+        let k7 = getRandomInt(2, 9);
+        let c7 = shuffleArray([
+            { id: "choiceA", text: "A) Elle converge vers une limite finie $\\ell \\le " + k7 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) Elle diverge vers $+\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) Elle est nécessairement constante", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $(u_n)$ une suite **croissante** et **majorée** par $" + k7 + "$.",
+            title: "D'après le théorème de la convergence monotone, que peut-on conclure ?",
+            choices: c7,
+            correct: c7.find(c => c.isCorrect).id,
+            explanation: "<p>Toute suite croissante et majorée est convergente vers une limite réelle $\\ell \\le " + k7 + "$.</p>"
+        });
+
+        // Q8: Variation u_n = n^2 - k*n
+        let k8 = getRandomInt(3, 8);
+        let min_n = Math.ceil(k8 / 2);
+        let c8 = shuffleArray([
+            { id: "choiceA", text: "A) À partir du rang $n = " + min_n + "$", isCorrect: true },
+            { id: "choiceB", text: "B) Pour tout $n \\ge 0$", isCorrect: false },
+            { id: "choiceC", text: "C) À partir du rang $n = " + (min_n + 3) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la suite définie pour tout $n \\in \\mathbb{N}$ par $u_n = n^2 - " + k8 + "n$.",
+            title: "À partir de quel rang $n$ la suite $(u_n)$ est-elle Strictement croissante ?",
+            choices: c8,
+            correct: c8.find(c => c.isCorrect).id,
+            explanation: "<p>$u_{n+1} - u_n = 2n + 1 - " + k8 + "$.<br>$u_{n+1} - u_n > 0 \\iff 2n > " + (k8 - 1) + " \\iff n \\ge " + min_n + "$.</p>"
+        });
+
+        // Q9: Suite non linéaire u_{n+1} = u_n^2 + c
+        let c9 = getRandomInt(1, 4);
+        let u0_9 = getRandomInt(2, 3);
+        let u1_9 = u0_9 * u0_9 + c9;
+        let u2_9 = u1_9 * u1_9 + c9;
+
+        let c9_opts = shuffleArray([
+            { id: "choiceA", text: "A) $u_2 = " + u2_9 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $u_2 = " + (u2_9 - c9) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $u_2 = " + (u1_9 * 2) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la suite $(u_n)$ définie par $u_0 = " + u0_9 + "$ et $u_{n+1} = u_n^2 + " + c9 + "$.",
+            title: "Quelle est la valeur du terme $u_2$ ?",
+            choices: c9_opts,
+            correct: c9_opts.find(c => c.isCorrect).id,
+            explanation: "<p>$u_1 = " + u0_9 + "^2 + " + c9 + " = " + u1_9 + "$<br>$u_2 = " + u1_9 + "^2 + " + c9 + " = " + u2_9 + "$.</p>"
+        });
+
+        // Q10: Limite fixe l = sqrt(l + p)
+        let k10 = getRandomInt(2, 5);
+        let p10 = k10 * (k10 - 1);
+        let l_val = k10;
+
+        let c10 = shuffleArray([
+            { id: "choiceA", text: "A) $\\ell = " + l_val + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $\\ell = " + (l_val + 1) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $\\ell = " + p10 + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la suite $(u_n)$ telle que $u_0 = 1$ et $u_{n+1} = \\sqrt{u_n + " + p10 + "}$. On suppose que $(u_n)$ converge vers $\\ell > 0$.",
+            title: "Quelle est la valeur de la limite $\\ell$ ?",
+            choices: c10,
+            correct: c10.find(c => c.isCorrect).id,
+            explanation: "<p>$\\ell = \\sqrt{\\ell + " + p10 + "} \\iff \\ell^2 - \\ell - " + p10 + " = 0$.<br>Comme $\\ell > 0$, la seule solution est $\\ell = " + l_val + "$.</p>"
+        });
+
+        return qList;
+    }
+
+    function initQuiz() {
+        questions = generateDynamicQuestions();
+        currentQuestionIndex = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vous maîtrisez parfaitement les suites récurrentes et leurs variations !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Les notions de base sont acquises.";
+        } else {
+            resultMsg.innerHTML = "<strong>À revoir !</strong> Reprenez le cours sur le calcul de $u_{n+1} - u_n$.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        initQuiz();
+    }
+
+    window.onload = function() {
+        initQuiz();
+    };
+</script>
+
+</body>
+</html>

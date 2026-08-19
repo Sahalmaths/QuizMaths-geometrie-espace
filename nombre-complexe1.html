@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Nombres Complexes (Partie 1)</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 75px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f0fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+  <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre score final :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 260px; margin: 0 auto;" onclick="restartQuiz()">Recommencer le Quiz</button>
+    </div>
+</div>
+
+<script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomNonZeroInt(min, max) {
+        let val = 0;
+        while (val === 0) {
+            val = getRandomInt(min, max);
+        }
+        return val;
+    }
+
+    function shuffleArray(array) {
+        var arr = array.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function formatComplex(a, b) {
+        let res = "";
+        if (a !== 0 || b === 0) res += a;
+        if (b > 0) {
+            if (res !== "") res += " + ";
+            res += (b === 1) ? "i" : b + "i";
+        } else if (b < 0) {
+            if (res !== "") res += " - ";
+            else res += "-";
+            res += (b === -1) ? "i" : (-b) + "i";
+        }
+        return res;
+    }
+
+    function generateDynamicQuestions() {
+        let qList = [];
+
+        // Q1: Parties réelle et imaginaire (Section I.2)
+        let a1 = getRandomNonZeroInt(-9, 9);
+        let b1 = getRandomNonZeroInt(-9, 9);
+        let z1_str = formatComplex(a1, b1);
+        let c1 = shuffleArray([
+            { id: "choiceA", text: "A) $Re(z) = " + a1 + "$ et $Im(z) = " + b1 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $Re(z) = " + a1 + "$ et $Im(z) = " + b1 + "i$", isCorrect: false },
+            { id: "choiceC", text: "C) $Re(z) = " + b1 + "$ et $Im(z) = " + a1 + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le nombre complexe $z = " + z1_str + "$.",
+            title: "Quelles sont les valeurs de sa partie réelle $Re(z)$ et de sa partie imaginaire $Im(z)$ ?",
+            choices: c1,
+            correct: c1.find(c => c.isCorrect).id,
+            explanation: "<p>Par définition, pour $z = a + ib$, la partie réelle est $a = " + a1 + "$ et la partie imaginaire est le réel $b = " + b1 + "$ (sans le $i$).</p>"
+        });
+
+        // Q2: Opération de multiplication dans C (Section I.3)
+        let a2 = getRandomInt(1, 5);
+        let b2 = getRandomInt(1, 4);
+        let c2_val = getRandomInt(1, 5);
+        let d2 = getRandomInt(1, 4);
+        // (a2 + b2 i)(c2 - d2 i) = (a2*c2 + b2*d2) + i(b2*c2 - a2*d2)
+        let real2 = a2 * c2_val + b2 * d2;
+        let imag2 = b2 * c2_val - a2 * d2;
+        let z2_res = formatComplex(real2, imag2);
+        let z2_err = formatComplex(a2 * c2_val - b2 * d2, b2 * c2_val + a2 * d2);
+
+        let c2 = shuffleArray([
+            { id: "choiceA", text: "A) $z = " + z2_res + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $z = " + z2_err + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $z = " + (real2 + 2) + " + " + imag2 + "i$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On pose $z = (" + formatComplex(a2, b2) + ")(" + formatComplex(c2_val, -d2) + ")$.",
+            title: "Quelle est la forme algébrique du nombre complexe $z$ ?",
+            choices: c2,
+            correct: c2.find(c => c.isCorrect).id,
+            explanation: "<p>$z = " + a2 * c2_val + " - " + (a2 * d2) + "i + " + (b2 * c2_val) + "i - " + b2 * d2 + "i^2$.<br>Comme $i^2 = -1$, $z = (" + (a2 * c2_val) + " + " + (b2 * d2) + ") + (" + (b2 * c2_val - a2 * d2) + ")i = " + z2_res + "$.</p>"
+        });
+
+        // Q3: Conjugaison (Section I.4)
+        let a3 = getRandomNonZeroInt(-8, 8);
+        let b3 = getRandomNonZeroInt(-8, 8);
+        let z3_orig = formatComplex(a3, b3);
+        let z3_conj = formatComplex(a3, -b3);
+        let z3_neg = formatComplex(-a3, -b3);
+
+        let c3 = shuffleArray([
+            { id: "choiceA", text: "A) $\\overline{z} = " + z3_conj + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $\\overline{z} = " + z3_neg + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $\\overline{z} = " + formatComplex(-a3, b3) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le nombre complexe $z = " + z3_orig + "$.",
+            title: "Déterminer la forme algébrique de son conjugué $\\overline{z}$.",
+            choices: c3,
+            correct: c3.find(c => c.isCorrect).id,
+            explanation: "<p>Si $z = a + ib$, alors son conjugué est $\\overline{z} = a - ib$.<br>Ici $\\overline{z} = " + z3_conj + "$.</p>"
+        });
+
+        // Q4: Produit z * z_barre (Section I.4)
+        let a4 = getRandomInt(1, 6);
+        let b4 = getRandomInt(1, 6);
+        let prod4 = a4 * a4 + b4 * b4;
+
+        let c4 = shuffleArray([
+            { id: "choiceA", text: "A) $z \\times \\overline{z} = " + prod4 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $z \\times \\overline{z} = " + (a4 * a4 - b4 * b4) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $z \\times \\overline{z} = " + (prod4 + 2 * a4) + "i$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $z = " + formatComplex(a4, b4) + "$ et $\\overline{z}$ son conjugué.",
+            title: "Calculer le produit $z \\times \\overline{z}$.",
+            choices: c4,
+            correct: c4.find(c => c.isCorrect).id,
+            explanation: "<p>D'après le cours, $z \\times \\overline{z} = a^2 + b^2$.<br>Donc $z \\times \\overline{z} = " + a4 + "^2 + " + b4 + "^2 = " + (a4 * a4) + " + " + (b4 * b4) + " = " + prod4 + "$.</p>"
+        });
+
+        // Q5: Imaginaire pur et paramètre (Section I.2)
+        let x0 = getRandomNonZeroInt(-5, 5);
+        let x1 = getRandomNonZeroInt(-5, 5);
+        while(x1 === x0) x1 = getRandomNonZeroInt(-5, 5);
+        // z = (x - x0)(x - x1) + i(x - 1) -> Réel si Im(z)=0, Imaginaire pur si Re(z)=0
+        let c5 = shuffleArray([
+            { id: "choiceA", text: "A) $x = " + x0 + "$ ou $x = " + x1 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $x = " + (-x0) + "$ ou $x = " + (-x1) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $x = 0$ uniquement", isCorrect: false }
+        ]);
+        let b_poly = -(x0 + x1);
+        let c_poly = x0 * x1;
+        let poly_str = "x^2 " + (b_poly >= 0 ? "+ " + b_poly : "- " + (-b_poly)) + "x " + (c_poly >= 0 ? "+ " + c_poly : "- " + (-c_poly));
+
+        qList.push({
+            header: "Soit le nombre complexe $z = (" + poly_str + ") + 3ix$, où $x \\in \\mathbb{R}$.",
+            title: "Pour quelles valeurs du réel $x$, $z$ est-il un imaginaire pur ?",
+            choices: c5,
+            correct: c5.find(c => c.isCorrect).id,
+            explanation: "<p>$z$ est un imaginaire pur si et seulement si sa partie réelle est nulle : $Re(z) = 0$.<br>Soit $" + poly_str + " = 0 \\iff (x - " + x0 + ")(x - " + x1 + ") = 0$.<br>Ainsi $x = " + x0 + "$ ou $x = " + x1 + "$.</p>"
+        });
+
+        // Q6: Inverse d'un nombre complexe (Section I.5.a)
+        let a6 = getRandomInt(1, 3);
+        let b6 = getRandomInt(1, 3);
+        let denom6 = a6 * a6 + b6 * b6;
+        let inv_str = "\\frac{" + a6 + "}{" + denom6 + "} - \\frac{" + b6 + "}{" + denom6 + "}i";
+
+        let c6 = shuffleArray([
+            { id: "choiceA", text: "A) $\\frac{1}{z} = " + inv_str + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $\\frac{1}{z} = \\frac{1}{" + a6 + "} + \\frac{1}{" + b6 + "}i$", isCorrect: false },
+            { id: "choiceC", text: "C) $\\frac{1}{z} = \\frac{" + a6 + " + " + b6 + "i}{" + denom6 + "}$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le nombre complexe $z = " + formatComplex(a6, b6) + "$.",
+            title: "Déterminer la forme algébrique de son inverse $\\frac{1}{z}$.",
+            choices: c6,
+            correct: c6.find(c => c.isCorrect).id,
+            explanation: "<p>$\\frac{1}{z} = \\frac{\\overline{z}}{z\\overline{z}} = \\frac{" + formatComplex(a6, -b6) + "}{" + a6 + "^2 + " + b6 + "^2} = " + inv_str + "$.</p>"
+        });
+
+        // Q7: Quotient de deux complexes (Section I.5.b)
+        let a7 = getRandomInt(1, 3);
+        let b7 = getRandomInt(1, 3);
+        let c7_val = getRandomInt(1, 2);
+        let d7 = getRandomInt(1, 2);
+        // (a7 + b7 i) / (c7 - d7 i) = [(a7+b7 i)(c7+d7 i)] / (c7^2 + d7^2)
+        let num_real7 = a7 * c7_val - b7 * d7;
+        let num_imag7 = a7 * d7 + b7 * c7_val;
+        let den7 = c7_val * c7_val + d7 * d7;
+
+        let quo_str = "\\frac{" + num_real7 + "}{" + den7 + "} + \\frac{" + num_imag7 + "}{" + den7 + "}i";
+        let c7 = shuffleArray([
+            { id: "choiceA", text: "A) $Z = " + quo_str + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $Z = \\frac{" + (a7 * c7_val) + "}{" + den7 + "} + \\frac{" + (b7 * d7) + "}{" + den7 + "}i$", isCorrect: false },
+            { id: "choiceC", text: "C) $Z = " + num_real7 + " + " + num_imag7 + "i$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit le quotient $Z = \\frac{" + formatComplex(a7, b7) + "}{" + formatComplex(c7_val, -d7) + "}$.",
+            title: "Écrire $Z$ sous sa forme algébrique.",
+            choices: c7,
+            correct: c7.find(c => c.isCorrect).id,
+            explanation: "<p>On multiplie le numérateur et le dénominateur par le conjugué du dénominateur $(" + formatComplex(c7_val, d7) + ")$ :<br>$Z = \\frac{(" + formatComplex(a7, b7) + ")(" + formatComplex(c7_val, d7) + ")}{" + c7_val + "^2 + (" + (-d7) + ")^2} = " + quo_str + "$.</p>"
+        });
+
+        // Q8: Équation du second degré avec Delta < 0 (Section II)
+        let h8 = getRandomInt(1, 4);
+        let k8 = getRandomInt(1, 4);
+        // z^2 - 2h z + (h^2 + k^2) = 0 => z = h +/- i k
+        let b8 = -2 * h8;
+        let c8_val = h8 * h8 + k8 * k8;
+        let sol1_str = formatComplex(h8, k8);
+        let sol2_str = formatComplex(h8, -k8);
+
+        let c8 = shuffleArray([
+            { id: "choiceA", text: "A) $S = \\{" + sol1_str + " ; " + sol2_str + "\\}$", isCorrect: true },
+            { id: "choiceB", text: "B) $S = \\{" + formatComplex(-h8, k8) + " ; " + formatComplex(-h8, -k8) + "\\}$", isCorrect: false },
+            { id: "choiceC", text: "C) Pas de solution dans $\\mathbb{C}$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit l'équation $z^2 " + (b8 < 0 ? "- " + (-b8) : "+ " + b8) + "z + " + c8_val + " = 0$ dans $\\mathbb{C}$.",
+            title: "Quelles sont les solutions de cette équation ?",
+            choices: c8,
+            correct: c8.find(c => c.isCorrect).id,
+            explanation: "<p>$\\Delta = (" + b8 + ")^2 - 4(1)(" + c8_val + ") = " + (b8 * b8) + " - " + (4 * c8_val) + " = -" + (4 * k8 * k8) + " < 0$.<br>Les solutions sont complexes conjuguées : $z = \\frac{-(" + b8 + ") \\pm i\\sqrt{" + (4 * k8 * k8) + "}}{2} = " + h8 + " \\pm " + k8 + "i$.</p>"
+        });
+
+        // Q9: Équation linéaire avec conjugué (Section I.4 - Exercice 5)
+        // z + a \bar{z} = c + i d  avec z = x + iy
+        let x9 = getRandomInt(-4, 4);
+        let y9 = getRandomInt(-4, 4);
+        let z9_target = formatComplex(x9, y9);
+        // z + 2 \bar{z} = (x + iy) + 2(x - iy) = 3x - iy
+        let rhs_real = 3 * x9;
+        let rhs_imag = -y9;
+        let rhs_str = formatComplex(rhs_real, rhs_imag);
+
+        let c9 = shuffleArray([
+            { id: "choiceA", text: "A) $z = " + z9_target + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $z = " + formatComplex(-x9, y9) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $z = " + formatComplex(x9, -y9) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère l'équation $z + 2\\overline{z} = " + rhs_str + "$ d'inconnue complexe $z$.",
+            title: "Déterminer la solution $z$ de cette équation.",
+            choices: c9,
+            correct: c9.find(c => c.isCorrect).id,
+            explanation: "<p>En posant $z = x + iy$, on a $(x + iy) + 2(x - iy) = 3x - iy = " + rhs_str + "$.<br>Par identification des parties réelles et imaginaires : $3x = " + rhs_real + " \\implies x = " + x9 + "$ et $-y = " + rhs_imag + " \\implies y = " + y9 + "$.<br>D'où $z = " + z9_target + "$.</p>"
+        });
+
+        // Q10: Affixe d'un point image par une transformation (Section III)
+        let xM = getRandomInt(-3, 3);
+        let yM = getRandomInt(-3, 3);
+        let zM_str = formatComplex(xM, yM);
+        let k10 = getRandomInt(1, 4);
+        // z' = z + k10*i
+        let zM_prime_str = formatComplex(xM, yM + k10);
+
+        let c10 = shuffleArray([
+            { id: "choiceA", text: "A) $z' = " + zM_prime_str + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $z' = " + formatComplex(xM + k10, yM) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $z' = " + formatComplex(xM * k10, yM) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Dans le plan complexe, au point $M$ d'affixe $z = " + zM_str + "$, on associe le point $M'$ d'affixe $z' = z + " + k10 + "i$.",
+            title: "Quelle est l'affixe $z'$ du point $M'$ ?",
+            choices: c10,
+            correct: c10.find(c => c.isCorrect).id,
+            explanation: "<p>$z' = (" + zM_str + ") + " + k10 + "i = " + xM + " + (" + yM + " + " + k10 + ")i = " + zM_prime_str + "$.</p>"
+        });
+
+        return qList;
+    }
+
+    function initQuiz() {
+        questions = generateDynamicQuestions();
+        currentQuestionIndex = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vous maîtrisez parfaitement les bases des nombres complexes !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Les notions de base sont bien comprises.";
+        } else {
+            resultMsg.innerHTML = "<strong>À revoir !</strong> Reprenez les opérations de base et les conjugués dans le cours.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        initQuiz();
+    }
+
+    window.onload = function() {
+        initQuiz();
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Dérivabilité et Continuité (Terminale)</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 75px;
+            height: auto;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f0fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+  <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 10</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre score final :</p>
+        <div id="resultScore" class="result-score">0 / 10</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 260px; margin: 0 auto;" onclick="restartQuiz()">Recommencer le Quiz</button>
+    </div>
+</div>
+
+<script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(array) {
+        var arr = array.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function generateDynamicQuestions() {
+        let qList = [];
+
+        // Q1: Dérivée d'un polynôme simple
+        let a1 = getRandomInt(2, 5);
+        let b1 = getRandomInt(2, 8);
+        let c1_val = getRandomInt(1, 9);
+        let c1 = shuffleArray([
+            { id: "choiceA", text: "A) $f'(x) = " + (3*a1) + "x^2 - " + (2*b1) + "x$", isCorrect: true },
+            { id: "choiceB", text: "B) $f'(x) = " + a1 + "x^2 - " + b1 + "x$", isCorrect: false },
+            { id: "choiceC", text: "C) $f'(x) = " + (3*a1) + "x^2 - " + (2*b1) + "x + " + c1_val + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la fonction $f$ définie sur $\\mathbb{R}$ par $f(x) = " + a1 + "x^3 - " + b1 + "x^2 + " + c1_val + "$.",
+            title: "Quelle est l'expression de sa fonction dérivée $f'(x)$ ?",
+            choices: c1,
+            correct: c1.find(c => c.isCorrect).id,
+            explanation: "<p>En utilisant la formule $(x^n)' = n x^{n-1}$ et $(k)' = 0$ :<br>$f'(x) = " + a1 + " \\times 3x^2 - " + b1 + " \\times 2x + 0 = " + (3*a1) + "x^2 - " + (2*b1) + "x$.</p>"
+        });
+
+        // Q2: Dérivée de u^n
+        let a2 = getRandomInt(2, 4);
+        let b2 = getRandomInt(1, 5);
+        let n2 = getRandomInt(3, 5);
+        let c2 = shuffleArray([
+            { id: "choiceA", text: "A) $f'(x) = " + (n2 * a2) + "(" + a2 + "x - " + b2 + ")^{" + (n2 - 1) + "}$", isCorrect: true },
+            { id: "choiceB", text: "B) $f'(x) = " + n2 + "(" + a2 + "x - " + b2 + ")^{" + (n2 - 1) + "}$", isCorrect: false },
+            { id: "choiceC", text: "C) $f'(x) = " + a2 + "(" + a2 + "x - " + b2 + ")^{" + n2 + "}$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère la fonction $f(x) = (" + a2 + "x - " + b2 + ")^{" + n2 + "}$.",
+            title: "Calculer $f'(x)$ à l'aide de la formule $(u^n)' = n u' u^{n-1}$.",
+            choices: c2,
+            correct: c2.find(c => c.isCorrect).id,
+            explanation: "<p>Ici $u(x) = " + a2 + "x - " + b2 + "$, donc $u'(x) = " + a2 + "$.<br>On applique $(u^n)' = n u' u^{n-1} = " + n2 + " \\times " + a2 + " \\times (" + a2 + "x - " + b2 + ")^{" + (n2 - 1) + "} = " + (n2 * a2) + "(" + a2 + "x - " + b2 + ")^{" + (n2 - 1) + "}$.</p>"
+        });
+
+        // Q3: Dérivée d'un quotient u/v (Corrigé)
+let a3 = getRandomInt(1, 5);
+let b3 = getRandomInt(2, 6);
+let num3 = a3 * b3;
+let c3 = shuffleArray([
+    { id: "choiceA", text: "A) $f'(x) = \\frac{" + num3 + "}{(x + " + b3 + ")^2}$", isCorrect: true },
+    { id: "choiceB", text: "B) $f'(x) = \\frac{-" + num3 + "}{(x + " + b3 + ")^2}$", isCorrect: false },
+    { id: "choiceC", text: "C) $f'(x) = \\frac{" + a3 + "}{(x + " + b3 + ")^2}$", isCorrect: false }
+]);
+qList.push({
+    header: "Soit la fonction rationnelle $f(x) = \\frac{" + a3 + "x}{x + " + b3 + "}$ définie sur $]-" + b3 + " ; +\\infty[$.",
+    title: "Déterminer la fonction dérivée $f'(x)$.",
+    choices: c3,
+    correct: c3.find(c => c.isCorrect).id,
+    explanation: "<p>En utilisant $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$ avec $u(x)=" + a3 + "x$ ($u'=" + a3 + "$) et $v(x)=x+" + b3 + "$ ($v'=1$) :<br>$f'(x) = \\frac{" + a3 + "(x + " + b3 + ") - " + a3 + "x(1)}{(x + " + b3 + ")^2} = \\frac{" + num3 + "}{(x + " + b3 + ")^2}$.</p>"
+});
+        // Q4: Dérivée de sqrt(u)
+        let a4 = getRandomInt(2, 6);
+        let b4 = getRandomInt(1, 9);
+        let c4 = shuffleArray([
+            { id: "choiceA", text: "A) $f'(x) = \\frac{" + a4 + "}{2\\sqrt{" + a4 + "x + " + b4 + "}}$", isCorrect: true },
+            { id: "choiceB", text: "B) $f'(x) = \\frac{1}{2\\sqrt{" + a4 + "x + " + b4 + "}}$", isCorrect: false },
+            { id: "choiceC", text: "C) $f'(x) = \\frac{" + a4 + "}{\\sqrt{" + a4 + "x + " + b4 + "}}$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la fonction $f(x) = \\sqrt{" + a4 + "x + " + b4 + "}$.",
+            title: "Quelle est la dérivée $f'(x)$ sur son domaine de dérivabilité ?",
+            choices: c4,
+            correct: c4.find(c => c.isCorrect).id,
+            explanation: "<p>Avec la formule $(\\sqrt{u})' = \\frac{u'}{2\\sqrt{u}}$, où $u(x) = " + a4 + "x + " + b4 + "$ et $u'(x) = " + a4 + "$ :<br>$f'(x) = \\frac{" + a4 + "}{2\\sqrt{" + a4 + "x + " + b4 + "}}$.</p>"
+        });
+
+        // Q5: Dérivée des fonctions trigonométriques
+        let k5 = getRandomInt(2, 5);
+        let c5 = shuffleArray([
+            { id: "choiceA", text: "A) $f'(x) = -" + k5 + "\\sin(x)$", isCorrect: true },
+            { id: "choiceB", text: "B) $f'(x) = " + k5 + "\\sin(x)$", isCorrect: false },
+            { id: "choiceC", text: "C) $f'(x) = -" + k5 + "\\cos(x)$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la fonction $f(x) = " + k5 + "\\cos(x) + 3$.",
+            title: "Calculer $f'(x)$.",
+            choices: c5,
+            correct: c5.find(c => c.isCorrect).id,
+            explanation: "<p>La dérivée de $\\cos(x)$ est $-\\sin(x)$ et la dérivée d'une constante est $0$.<br>Donc $f'(x) = " + k5 + " \\times (-\\sin(x)) + 0 = -" + k5 + "\\sin(x)$.</p>"
+        });
+
+        // Q6: Dérivabilité et continuité (Concept)
+        let c6 = shuffleArray([
+            { id: "choiceA", text: "A) Vrai, toute fonction dérivable est continue.", isCorrect: true },
+            { id: "choiceB", text: "B) Faux, la continuité n'implique pas le calcul de dérivée.", isCorrect: false },
+            { id: "choiceC", text: "C) Vrai uniquement pour les fonctions polynômes.", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit une fonction $f$ dérivable sur un intervalle $I$.",
+            title: "L'affirmation « $f$ est nécessairement continue sur $I$ » est-elle vraie ?",
+            choices: c6,
+            correct: c6.find(c => c.isCorrect).id,
+            explanation: "<p>C'est un théorème fondamental du cours : Toute fonction dérivable sur un intervalle $I$ est continue sur cet intervalle. (La réciproque est fausse, exemple : la fonction valeur absolue en $0$).</p>"
+        });
+
+        // Q7: Continuité par limite
+        let a7 = getRandomInt(1, 4);
+        let val7 = a7 * a7 + 2;
+        let c7 = shuffleArray([
+            { id: "choiceA", text: "A) $a = " + val7 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $a = " + (val7 + 2) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $a = " + (val7 - 1) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la fonction $f$ définie par $f(x) = x^2 + 2$ pour $x \\neq " + a7 + "$ et $f(" + a7 + ") = a$.",
+            title: "Quelle valeur doit prendre le réel $a$ pour que $f$ soit continue en $x = " + a7 + "$ ?",
+            choices: c7,
+            correct: c7.find(c => c.isCorrect).id,
+            explanation: "<p>Pour que $f$ soit continue en $" + a7 + "$, il faut que $\\lim_{x \\to " + a7 + "} f(x) = f(" + a7 + ")$.<br>Or $\\lim_{x \\to " + a7 + "} (x^2 + 2) = " + a7 + "^2 + 2 = " + val7 + "$. Donc $a = " + val7 + "$.</p>"
+        });
+
+        // Q8: TVI (Nombre de solutions)
+        let fa8 = -getRandomInt(2, 5);
+        let fb8 = getRandomInt(3, 7);
+        let c8 = shuffleArray([
+            { id: "choiceA", text: "A) Au moins une solution", isCorrect: true },
+            { id: "choiceB", text: "B) Exactement deux solutions", isCorrect: false },
+            { id: "choiceC", text: "C) Aucune solution", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f$ une fonction continue sur $[1 ; 5]$ telle que $f(1) = " + fa8 + "$ et $f(5) = " + fb8 + "$.",
+            title: "Que permet d'affirmer le Théorème des Valeurs Intermédiaires (TVI) pour l'équation $f(x) = 0$ ?",
+            choices: c8,
+            correct: c8.find(c => c.isCorrect).id,
+            explanation: "<p>$f$ est continue et $0$ est compris entre $f(1) = " + fa8 + "$ et $f(5) = " + fb8 + "$. D'après le TVI, l'équation $f(x) = 0$ admet au moins une solution sur $[1 ; 5]$.</p>"
+        });
+
+        // Q9: Corollaire du TVI (Unicité)
+        let c9 = shuffleArray([
+            { id: "choiceA", text: "A) $f$ doit être strictement monotone sur $[a ; b]$.", isCorrect: true },
+            { id: "choiceB", text: "B) $f$ doit être strictement positive sur $[a ; b]$.", isCorrect: false },
+            { id: "choiceC", text: "C) $f$ doit être deux fois dérivable.", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Pour prouver qu'une équation $f(x) = k$ possède une **unique** solution sur un intervalle $[a ; b]$.",
+            title: "Quelle condition supplémentaire à la continuité faut-il vérifier ?",
+            choices: c9,
+            correct: c9.find(c => c.isCorrect).id,
+            explanation: "<p>D'après le corollaire du TVI, c'est la **stricte monotonie** (fonction strictement croissante ou strictement décroissante) qui garantit l'unicité de la solution.</p>"
+        });
+
+        // Q10: Dérivée de 1/u^n
+        let n10 = getRandomInt(2, 4);
+        let c10 = shuffleArray([
+            { id: "choiceA", text: "A) $f'(x) = \\frac{-" + (2*n10) + "x}{(x^2 + 1)^{" + (n10+1) + "}}$", isCorrect: true },
+            { id: "choiceB", text: "B) $f'(x) = \\frac{" + (2*n10) + "x}{(x^2 + 1)^{" + (n10+1) + "}}$", isCorrect: false },
+            { id: "choiceC", text: "C) $f'(x) = \\frac{-" + n10 + "}{(x^2 + 1)^{" + (n10+1) + "}}$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = \\frac{1}{(x^2 + 1)^{" + n10 + "}}$.",
+            title: "Calculer $f'(x)$ en utilisant la formule $\\left(\\frac{1}{u^n}\\right)' = \\frac{-n u'}{u^{n+1}}$.",
+            choices: c10,
+            correct: c10.find(c => c.isCorrect).id,
+            explanation: "<p>En posant $u(x) = x^2 + 1$, on a $u'(x) = 2x$.<br>Donc $f'(x) = \\frac{-" + n10 + " \\times 2x}{((x^2 + 1)^{" + n10 + "})^1} = \\frac{-" + (2*n10) + "x}{(x^2 + 1)^{" + (n10+1) + "}}$.</p>"
+        });
+
+        return qList;
+    }
+
+    function initQuiz() {
+        questions = generateDynamicQuestions();
+        currentQuestionIndex = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 8) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Tu as bien maîtrisé les dérivées et le théorème des valeurs intermédiairess !";
+        } else if (score >= 5) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Les notions de base sont acquises, attention aux formules de dérivées composées.";
+        } else {
+            resultMsg.innerHTML = "<strong>À revoir !</strong> Reprenez le tableau des dérivées usuelles et les conditions du TVI.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        initQuiz();
+    }
+
+    window.onload = function() {
+        initQuiz();
+    };
+</script>
+
+</body>
+</html>
