@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz IhsanMaths - Limites de Fonctions (Terminale S)</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .quiz-card {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            border: 2px solid #555555;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-logo {
+    position: absolute;
+    top: 10px;      /* Remonte le logo plus près du bord supérieur */
+    right: 15px;    /* Calé vers la droite */
+    width: 75px;    /* Taille réduite (ajustez à 70px ou 80px selon votre préférence) */
+    height: auto;
+}
+
+        .question-counter {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-right: 110px;
+        }
+
+        .question-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.95em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: #00b3cc;
+            transform: scale(1.02);
+        }
+
+        .btn-action:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .interactive-zone {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 1em;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-choice:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-choice.selected {
+            background-color: #e0f0fa;
+            border-color: #00e5ff;
+            font-weight: bold;
+        }
+
+        .validation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .correct {
+            background-color: #e8f8f5;
+            border-left: 5px solid #2ecc71;
+            color: #1e8449;
+        }
+
+        .incorrect {
+            background-color: #fceeea;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00b3cc;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+  <img src="https://lh3.googleusercontent.com/d/1gUl6tU694Xuxet9YGqqC8ycOhog9wylq" alt="Logo IhsanMaths" class="quiz-logo">
+
+    <div id="quizContent">
+        <div id="questionCounter" class="question-counter">Question 1 / 20</div>
+        <div id="quizHeader" class="quiz-header"></div>
+        <div id="questionTitle" class="question-title"></div>
+
+        <div id="interactiveZone" class="interactive-zone">
+            <div id="choicesContainer" class="choices-container"></div>
+            
+            <div id="validationBox" class="validation-box">
+                <p id="validationText"></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+                <div id="explanationText"></div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn-action" id="btnPrev" onclick="prevQuestion()" disabled>Retour</button>
+            <button class="btn-action" onclick="showChoices()">Réponse</button>
+            <button class="btn-action" onclick="checkAnswer()">Vérification</button>
+            <button class="btn-action" id="btnNext" onclick="nextQuestion()" disabled>Suivant</button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="result-card">
+        <h2>Quiz Terminé !</h2>
+        <p>Voici votre score final :</p>
+        <div id="resultScore" class="result-score">0 / 20</div>
+        <p id="resultMsg" class="result-msg"></p>
+        <button class="btn-action" style="max-width: 260px; margin: 0 auto;" onclick="restartQuiz()">Recommencer le Quiz</button>
+    </div>
+</div>
+
+<script>
+    var questions = [];
+    var currentQuestionIndex = 0;
+    var currentChoice = null;
+    var score = 0;
+    var hasAttemptedCurrent = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomNonZero(min, max) {
+        let val = 0;
+        while (val === 0) {
+            val = getRandomInt(min, max);
+        }
+        return val;
+    }
+
+    function shuffleArray(array) {
+        var arr = array.slice();
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+
+    function generateDynamicQuestions() {
+        let qList = [];
+
+        // Q1: Polynôme en +inf
+        let a1 = getRandomNonZero(-5, 5);
+        let deg1 = getRandomInt(3, 5);
+        let res1 = (a1 > 0) ? "+\\infty" : "-\\infty";
+        let c1 = shuffleArray([
+            { id: "choiceA", text: "A) $" + res1 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) " + (res1 === "+\\infty" ? "$-\\infty$" : "$+\\infty$"), isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = " + (a1===1?"":a1===-1?"-":a1) + "x^" + deg1 + " + " + getRandomInt(2,9) + "x - 7$.",
+            title: "Déterminer la limite de $f(x)$ en $+\\infty$.",
+            choices: c1,
+            correct: c1.find(c => c.isCorrect).id,
+            explanation: "<p>Un polynôme a la même limite en $+\\infty$ que son terme de plus haut degré :<br>$\\lim_{x \\to +\\infty} " + (a1===1?"":a1===-1?"-":a1) + "x^" + deg1 + " = " + res1 + "$.</p>"
+        });
+
+        // Q2: Polynôme deg pair en -inf
+        let a2 = getRandomNonZero(-4, 4);
+        let res2 = (a2 > 0) ? "+\\infty" : "-\\infty";
+        let c2 = shuffleArray([
+            { id: "choiceA", text: "A) $" + res2 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) " + (res2 === "+\\infty" ? "$-\\infty$" : "$+\\infty$"), isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $g(x) = " + (a2===1?"":a2===-1?"-":a2) + "x^4 + " + getRandomInt(1,5) + "x + 3$.",
+            title: "Déterminer la limite de $g(x)$ en $-\\infty$.",
+            choices: c2,
+            correct: c2.find(c => c.isCorrect).id,
+            explanation: "<p>Comme le degré est pair ($x^4$), $(-x)^4 > 0$. La limite dépend du signe du coefficient :<br>$\\lim_{x \\to -\\infty} " + (a2===1?"":a2===-1?"-":a2) + "x^4 = " + res2 + "$.</p>"
+        });
+
+        // Q3: Rationnelle Degré Égal
+        let a3 = getRandomNonZero(-6, 6);
+        let b3 = getRandomNonZero(-6, 6);
+        let c3 = shuffleArray([
+            { id: "choiceA", text: "A) $\\dfrac{" + a3 + "}{" + b3 + "}$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $+\\infty$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $h(x) = \\dfrac{" + a3 + "x^2 + 2}{" + b3 + "x^2 - 1}$.",
+            title: "Déterminer la limite de $h(x)$ en $+\\infty$.",
+            choices: c3,
+            correct: c3.find(c => c.isCorrect).id,
+            explanation: "<p>Rapport des termes de plus haut degré :<br>$\\lim_{x \\to +\\infty} \\dfrac{" + a3 + "x^2}{" + b3 + "x^2} = \\dfrac{" + a3 + "}{" + b3 + "}$.</p>"
+        });
+
+        // Q4: Rationnelle Numerateur > Denominateur
+        let numDeg4 = getRandomInt(2,4);
+        let c4 = shuffleArray([
+            { id: "choiceA", text: "A) $+\\infty$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $1$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = \\dfrac{x^" + numDeg4 + " + 1}{x + 3}$.",
+            title: "Déterminer la limite de $f(x)$ en $+\\infty$.",
+            choices: c4,
+            correct: c4.find(c => c.isCorrect).id,
+            explanation: "<p>$\\lim_{x \\to +\\infty} \\dfrac{x^" + numDeg4 + "}{x} = \\lim_{x \\to +\\infty} x^" + (numDeg4-1) + " = +\\infty$.</p>"
+        });
+
+        // Q5: Rationnelle Denominateur > Numerateur
+        let c5 = shuffleArray([
+            { id: "choiceA", text: "A) $0$", isCorrect: true },
+            { id: "choiceB", text: "B) $+\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) $3$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $g(x) = \\dfrac{3x + 5}{2x^2 + 1}$.",
+            title: "Déterminer la limite de $g(x)$ en $+\\infty$.",
+            choices: c5,
+            correct: c5.find(c => c.isCorrect).id,
+            explanation: "<p>$\\lim_{x \\to +\\infty} \\dfrac{3x}{2x^2} = \\lim_{x \\to +\\infty} \\dfrac{3}{2x} = 0$.</p>"
+        });
+
+        // Q6: Factorisation x - k*sqrt(x)
+        let k6 = getRandomInt(2, 8);
+        let c6 = shuffleArray([
+            { id: "choiceA", text: "A) $+\\infty$", isCorrect: true },
+            { id: "choiceB", text: "B) $-\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère $f(x) = x - " + k6 + "\\sqrt{x}$.",
+            title: "Déterminer la limite de $f(x)$ en $+\\infty$.",
+            choices: c6,
+            correct: c6.find(c => c.isCorrect).id,
+            explanation: "<p>En factorisant par $x$ : $x\\left(1 - \\dfrac{" + k6 + "}{\\sqrt{x}}\\right)$.<br>Comme $\\lim_{x \\to +\\infty} \\dfrac{" + k6 + "}{\\sqrt{x}} = 0$, par produit la limite vaut $+\\infty$.</p>"
+        });
+
+        // Q7: Factorisation FI 0/0
+        let r7 = getRandomInt(1, 4);
+        let k7 = getRandomInt(2, 5);
+        let limitVal7 = r7 + k7;
+        let c7 = shuffleArray([
+            { id: "choiceA", text: "A) $" + limitVal7 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $" + (limitVal7 + 3) + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $h(x) = \\dfrac{x^2 + " + (k7 - r7) + "x - " + (r7 * k7) + "}{x - " + r7 + "}$.",
+            title: "Calculer la limite de $h(x)$ quand $x \\to " + r7 + "$.",
+            choices: c7,
+            correct: c7.find(c => c.isCorrect).id,
+            explanation: "<p>$\\dfrac{(x - " + r7 + ")(x + " + k7 + ")}{x - " + r7 + "} = x + " + k7 + "$.<br>En $x = " + r7 + "$, la limite vaut $" + r7 + " + " + k7 + " = " + limitVal7 + "$.</p>"
+        });
+
+        // Q8: Conjuguee Racine en Point
+        let a8 = getRandomInt(1, 5);
+        let b8 = a8 * a8;
+        let c8 = shuffleArray([
+            { id: "choiceA", text: "A) $\\dfrac{1}{" + (2*a8) + "}$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + (2*a8) + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit la limite $\\lim_{x \\to 0} \\dfrac{\\sqrt{x + " + b8 + "} - " + a8 + "}{x}$.",
+            title: "Quelle est la valeur de cette limite ?",
+            choices: c8,
+            correct: c8.find(c => c.isCorrect).id,
+            explanation: "<p>Par la conjuguée : $\\dfrac{x}{x(\\sqrt{x+" + b8 + "}+" + a8 + ")} = \\dfrac{1}{\\sqrt{x+" + b8 + "}+" + a8 + "}$.<br>En $0$, la limite vaut $\\dfrac{1}{" + (2*a8) + "}$.</p>"
+        });
+
+        // Q9: Conjuguee sqrt(x^2+1) - x
+        let c9 = shuffleArray([
+            { id: "choiceA", text: "A) $0$", isCorrect: true },
+            { id: "choiceB", text: "B) $+\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) $1$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On étudie la limite $\\lim_{x \\to +\\infty} (\\sqrt{x^2 + 1} - x)$.",
+            title: "Quelle est la valeur de cette limite ?",
+            choices: c9,
+            correct: c9.find(c => c.isCorrect).id,
+            explanation: "<p>En multipliant par la conjuguée : $\\dfrac{1}{\\sqrt{x^2+1} + x}$.<br>Le dénominateur tend vers $+\\infty$, donc le quotient tend vers $0$.</p>"
+        });
+
+        // Q10: Taux accroissement sin(ax)/x
+        let k10 = getRandomInt(2, 8);
+        let c10 = shuffleArray([
+            { id: "choiceA", text: "A) $" + k10 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $1$", isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On rappelle que $\\lim_{x \\to 0} \\dfrac{\\sin x}{x} = 1$.",
+            title: "Que vaut $\\lim_{x \\to 0} \\dfrac{\\sin(" + k10 + "x)}{x}$ ?",
+            choices: c10,
+            correct: c10.find(c => c.isCorrect).id,
+            explanation: "<p>$\\lim_{x \\to 0} " + k10 + " \\times \\dfrac{\\sin(" + k10 + "x)}{" + k10 + "x} = " + k10 + " \\times 1 = " + k10 + "$.</p>"
+        });
+
+        // Q11: Changement de variable x*sin(1/x)
+        let k11 = getRandomInt(2, 6);
+        let c11 = shuffleArray([
+            { id: "choiceA", text: "A) $" + k11 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $+\\infty$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Calculer $\\lim_{x \\to +\\infty} x \\sin\\left(\\dfrac{" + k11 + "}{x}\\right)$.",
+            title: "Quelle est la limite en $+\\infty$ ?",
+            choices: c11,
+            correct: c11.find(c => c.isCorrect).id,
+            explanation: "<p>En posant $t = \\dfrac{" + k11 + "}{x}$, quand $x \\to +\\infty$, $t \\to 0$.<br>L'expression devient $" + k11 + " \\times \\dfrac{\\sin t}{t} \\to " + k11 + "$.</p>"
+        });
+
+        // Q12: Gendarmes
+        let k12 = getRandomInt(2, 5);
+        let c12 = shuffleArray([
+            { id: "choiceA", text: "A) $" + k12 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $+\\infty$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f$ telle que pour tout $x > 0$ : $" + k12 + " - \\dfrac{1}{x} \\le f(x) \\le " + k12 + " + \\dfrac{1}{x}$.",
+            title: "D'après le théorème des gendarmes, que vaut $\\lim_{x \\to +\\infty} f(x)$ ?",
+            choices: c12,
+            correct: c12.find(c => c.isCorrect).id,
+            explanation: "<p>Comme les deux encadrements tendent vers $" + k12 + "$, le théorème des gendarmes donne $\\lim_{x \\to +\\infty} f(x) = " + k12 + "$.</p>"
+        });
+
+        // Q13: Gendarmes x^2 * cos(1/x)
+        let c13 = shuffleArray([
+            { id: "choiceA", text: "A) $0$", isCorrect: true },
+            { id: "choiceB", text: "B) $1$", isCorrect: false },
+            { id: "choiceC", text: "C) Non définie", isCorrect: false }
+        ]);
+        qList.push({
+            header: "On considère $g(x) = x^2 \\cos\\left(\\dfrac{1}{x}\\right)$ au voisinage de $0$.",
+            title: "Quelle est la limite de $g(x)$ en $0$ ?",
+            choices: c13,
+            correct: c13.find(c => c.isCorrect).id,
+            explanation: "<p>Comme $-1 \\le \\cos(1/x) \\le 1$, on a $-x^2 \\le g(x) \\le x^2$.<br>Par les gendarmes, $\\lim_{x \\to 0} g(x) = 0$.</p>"
+        });
+
+        // Q14: Minoration par comparaison
+        let c14 = shuffleArray([
+            { id: "choiceA", text: "A) $+\\infty$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $-\\infty$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) \\ge 2x^2 + 3$ pour tout $x > 1$.",
+            title: "Que vaut $\\lim_{x \\to +\\infty} f(x)$ ?",
+            choices: c14,
+            correct: c14.find(c => c.isCorrect).id,
+            explanation: "<p>Par théorème de minoration : $\\lim_{x \\to +\\infty} (2x^2+3) = +\\infty$, donc $\\lim_{x \\to +\\infty} f(x) = +\\infty$.</p>"
+        });
+
+        // Q15: Majoration par comparaison
+        let c15 = shuffleArray([
+            { id: "choiceA", text: "A) $-\\infty$", isCorrect: true },
+            { id: "choiceB", text: "B) $+\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $h(x) \\le -3x + 1$ pour tout $x \\in \\mathbb{R}$.",
+            title: "Que vaut $\\lim_{x \\to +\\infty} h(x)$ ?",
+            choices: c15,
+            correct: c15.find(c => c.isCorrect).id,
+            explanation: "<p>Par théorème de majoration : $\\lim_{x \\to +\\infty} (-3x+1) = -\\infty$, donc $\\lim_{x \\to +\\infty} h(x) = -\\infty$.</p>"
+        });
+
+        // Q16: Composee Racine
+        let a16 = getRandomInt(2, 5);
+        let val16 = a16 * a16;
+        let c16 = shuffleArray([
+            { id: "choiceA", text: "A) $" + a16 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $" + val16 + "$", isCorrect: false },
+            { id: "choiceC", text: "C) $+\\infty$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = \\sqrt{\\dfrac{" + val16 + "x + 1}{x - 2}}$.",
+            title: "Déterminer la limite de $f(x)$ en $+\\infty$.",
+            choices: c16,
+            correct: c16.find(c => c.isCorrect).id,
+            explanation: "<p>$\\lim_{x \\to +\\infty} \\dfrac{" + val16 + "x+1}{x-2} = " + val16 + "$.<br>Par composition avec la racine : $\\sqrt{" + val16 + "} = " + a16 + "$.</p>"
+        });
+
+        // Q17: Composee Cosinus
+        let c17 = shuffleArray([
+            { id: "choiceA", text: "A) $\\dfrac{1}{2}$", isCorrect: true },
+            { id: "choiceB", text: "B) $0$", isCorrect: false },
+            { id: "choiceC", text: "C) $1$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $g(x) = \\cos\\left(\\dfrac{\\pi x + 1}{3x - 2}\\right)$.",
+            title: "Déterminer la limite de $g(x)$ en $+\\infty$.",
+            choices: c17,
+            correct: c17.find(c => c.isCorrect).id,
+            explanation: "<p>$\\lim_{x \\to +\\infty} \\dfrac{\\pi x + 1}{3x - 2} = \\dfrac{\\pi}{3}$.<br>Par composition : $\\cos\\left(\\dfrac{\\pi}{3}\\right) = \\dfrac{1}{2}$.</p>"
+        });
+
+        // Q18: Asymptote Oblique Identification
+        let a18 = getRandomNonZero(-3, 4);
+        let b18 = getRandomInt(1, 5);
+        let c18 = shuffleArray([
+            { id: "choiceA", text: "A) $y = " + (a18===1?"x":a18===-1?"-x":a18+"x") + " + " + b18 + "$", isCorrect: true },
+            { id: "choiceB", text: "B) $y = " + a18 + "x$", isCorrect: false },
+            { id: "choiceC", text: "C) $y = " + b18 + "$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = " + (a18===1?"x":a18===-1?"-x":a18+"x") + " + " + b18 + " + \\dfrac{3}{x - 1}$.",
+            title: "Quelle est l'équation de l'asymptote oblique $(d)$ en $+\\infty$ ?",
+            choices: c18,
+            correct: c18.find(c => c.isCorrect).id,
+            explanation: "<p>Comme $\\lim_{x \\to +\\infty} [f(x) - (" + (a18===1?"x":a18===-1?"-x":a18+"x") + " + " + b18 + ")] = \\lim_{x \\to +\\infty} \\dfrac{3}{x-1} = 0$, la droite d'équation $y = " + (a18===1?"x":a18===-1?"-x":a18+"x") + " + " + b18 + "$ est asymptote oblique.</p>"
+        });
+
+        // Q19: Position Relative Asymptote
+        let c19 = shuffleArray([
+            { id: "choiceA", text: "A) $C_f$ est au-dessus de $(d)$", isCorrect: true },
+            { id: "choiceB", text: "B) $C_f$ est en dessous de $(d)$", isCorrect: false },
+            { id: "choiceC", text: "C) Elles sont confondues", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = 2x - 1 + \\dfrac{5}{x + 2}$ et $(d) : y = 2x - 1$ sur $]-2 ; +\\infty[$.",
+            title: "Quelle est la position relative de $C_f$ par rapport à $(d)$ ?",
+            choices: c19,
+            correct: c19.find(c => c.isCorrect).id,
+            explanation: "<p>$f(x) - y = \\dfrac{5}{x+2}$. Pour $x > -2$, cette différence est strictement positive, donc $C_f$ est au-dessus de $(d)$.</p>"
+        });
+
+        // Q20: Asymptote Verticale
+        let k20 = getRandomInt(1, 5);
+        let c20 = shuffleArray([
+            { id: "choiceA", text: "A) $+\\infty$", isCorrect: true },
+            { id: "choiceB", text: "B) $-\\infty$", isCorrect: false },
+            { id: "choiceC", text: "C) $0$", isCorrect: false }
+        ]);
+        qList.push({
+            header: "Soit $f(x) = \\dfrac{3}{x - " + k20 + "}$.",
+            title: "Déterminer la limite à droite $\\lim_{x \\to " + k20 + "^+} f(x)$.",
+            choices: c20,
+            correct: c20.find(c => c.isCorrect).id,
+            explanation: "<p>Quand $x \\to " + k20 + "^+$, $(x - " + k20 + ") \\to 0^+$.<br>Par quotient, $\\dfrac{3}{0^+} = +\\infty$. La droite $x = " + k20 + "$ est asymptote verticale.</p>"
+        });
+
+        return qList;
+    }
+
+    function initQuiz() {
+        questions = generateDynamicQuestions();
+        currentQuestionIndex = 0;
+        score = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        var q = questions[currentQuestionIndex];
+        hasAttemptedCurrent = false;
+        
+        document.getElementById("questionCounter").innerText = "Question " + (currentQuestionIndex + 1) + " / " + questions.length;
+        document.getElementById("quizHeader").innerHTML = q.header;
+        document.getElementById("questionTitle").innerHTML = q.title;
+        document.getElementById("explanationText").innerHTML = q.explanation;
+
+        var choicesHtml = "";
+        q.choices.forEach(function(choice) {
+            choicesHtml += '<button class="btn-choice" id="' + choice.id + '" onclick="selectChoice(\'' + choice.id + '\')">' + choice.text + '</button>';
+        });
+        document.getElementById("choicesContainer").innerHTML = choicesHtml;
+
+        document.getElementById("interactiveZone").style.display = "none";
+        document.getElementById("validationBox").style.display = "none";
+        
+        document.getElementById("btnNext").disabled = true;
+        document.getElementById("btnPrev").disabled = (currentQuestionIndex === 0);
+        currentChoice = null;
+
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function showChoices() {
+        document.getElementById("interactiveZone").style.display = "block";
+    }
+
+    function selectChoice(choiceId) {
+        if (currentChoice) {
+            var prevBtn = document.getElementById(currentChoice);
+            if (prevBtn) prevBtn.classList.remove('selected');
+        }
+        document.getElementById(choiceId).classList.add('selected');
+        currentChoice = choiceId;
+    }
+
+    function checkAnswer() {
+        var q = questions[currentQuestionIndex];
+        var validationBox = document.getElementById("validationBox");
+        var validationText = document.getElementById("validationText");
+        var btnNext = document.getElementById("btnNext");
+
+        if (!currentChoice) {
+            alert("Veuillez choisir une réponse avant de cliquer sur Vérification !");
+            return;
+        }
+
+        if (currentChoice === q.correct) {
+            validationBox.className = "validation-box correct";
+            validationText.innerHTML = "<strong>Félicitations !</strong> C'est la bonne réponse. Le bouton Suivant est débloqué.";
+            
+            if (!hasAttemptedCurrent) {
+                score++;
+            }
+            
+            btnNext.disabled = false;
+        } else {
+            validationBox.className = "validation-box incorrect";
+            validationText.innerHTML = "<strong>Désolé,</strong> ce n'est pas la bonne réponse. Revoir vos calculs pour débloquer la suite !";
+            btnNext.disabled = true;
+        }
+        
+        hasAttemptedCurrent = true;
+        validationBox.style.display = "block";
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById("quizContent").style.display = "none";
+        var resultCard = document.getElementById("resultCard");
+        var resultScore = document.getElementById("resultScore");
+        var resultMsg = document.getElementById("resultMsg");
+
+        resultScore.innerText = score + " / " + questions.length;
+
+        if (score >= 16) {
+            resultMsg.innerHTML = "<strong>Excellence !</strong> Vos élèves maîtrisent parfaitement toutes les techniques de calcul de limites !";
+        } else if (score >= 10) {
+            resultMsg.innerHTML = "<strong>Bon travail !</strong> Les notions fondamentales sont acquises, attention aux astuces de factorisation et conjuguée.";
+        } else {
+            resultMsg.innerHTML = "<strong>À revoir !</strong> Reprenez les méthodes du cours sur les levées d'indéterminations et la composition.";
+        }
+
+        resultCard.style.display = "block";
+    }
+
+    function restartQuiz() {
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("quizContent").style.display = "block";
+        initQuiz();
+    }
+
+    window.onload = function() {
+        initQuiz();
+    };
+</script>
+
+</body>
+</html>
