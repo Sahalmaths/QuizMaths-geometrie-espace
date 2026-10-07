@@ -3,41 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lycée PK12 - Connexion</title>
+<title>Connexion PK12</title>
 <style>
-body{font-family:Arial;background:#eef2ff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
-.card{background:white;padding:25px;border-radius:12px;box-shadow:0 4px 10px #ccc;width:340px}
+body{font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f4ff;margin:0}
+.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);width:90%;max-width:400px;text-align:center;border-top:5px solid #00e5ff}
 input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:6px;box-sizing:border-box}
-button{background:#4a6cf7;color:white;border:none;padding:14px;width:100%;border-radius:8px;font-weight:bold;font-size:16px}
+button{width:100%;padding:12px;background:#00e5ff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
+button:hover{background:#00b3cc}
+.error{color:red;margin-top:10px;font-weight:bold}
 </style>
 </head>
 <body>
 <div class="card">
-<h2 style="text-align:center">🏫 Lycée PK12</h2>
-<p style="text-align:center">Connexion Quiz IA</p>
-<input type="text" id="nom" placeholder="Nom de l'élève">
+<h2>Lycée PK12</h2>
+<p>Quiz Géométrie & Arithmétique</p>
+<input type="text" id="nom" placeholder="Nom de l'élève (Ex: OMAR ABDI)">
 <select id="niveau">
-<option value="">-- Niveau --</option>
+<option value="">-- Choisir Niveau --</option>
 <option value="Seconde">Seconde</option>
-<option value="Premiere S">Première S</option>
-<option value="Tle S">Tle S</option>
+<option value="Terminale">Terminale S</option>
 </select>
 <input type="password" id="mdp" placeholder="Mot de passe">
 <button onclick="connexion()">Entrer</button>
-<p id="erreur" style="color:red;text-align:center"></p>
+<div id="erreur" class="error"></div>
 </div>
 <script>
 function connexion(){
  let nom=document.getElementById("nom").value.trim();
  let niveau=document.getElementById("niveau").value;
  let mdp=document.getElementById("mdp").value.trim();
- if(!nom||!niveau||!mdp){erreur.innerText="Remplis tout!";return;}
- if(mdp!=="Lycée Pk12"){erreur.innerText="Mot de passe incorrect!";return;}
+ let erreur=document.getElementById("erreur");
+ if(!nom || !niveau || !mdp){erreur.innerText="Remplis tout !";return;}
+ if(mdp!=="Lycée Pk12"){erreur.innerText="Mot de passe incorrect ! Mets: Lycée Pk12";return;}
  localStorage.setItem("nomEleve",nom);
  localStorage.setItem("niveauEleve",niveau);
- if(niveau==="Seconde"){window.location.href="Plan-droites.html";}
- else {window.location.href="congruences.html";}
+ // REDIRECTION AUTOMATIQUE
+ if(niveau==="Terminale"){
+   window.location.href="congruences.html";
+ } else {
+   window.location.href="Plan-droites.html";
+ }
 }
 </script>
+</div>
 </body>
 </html>
