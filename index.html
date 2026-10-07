@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lycée PK12 - Connexion</title>
+<style>
+body{font-family:Arial;background:#eef2ff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+.card{background:white;padding:25px;border-radius:12px;box-shadow:0 4px 10px #ccc;width:340px}
+input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:6px;box-sizing:border-box}
+button{background:#4a6cf7;color:white;border:none;padding:14px;width:100%;border-radius:8px;font-weight:bold;font-size:16px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2 style="text-align:center">🏫 Lycée PK12</h2>
+<p style="text-align:center">Connexion Quiz IA</p>
+<input type="text" id="nom" placeholder="Nom de l'élève">
+<select id="niveau">
+<option value="">-- Niveau --</option>
+<option value="Seconde">Seconde</option>
+<option value="Premiere S">Première S</option>
+<option value="Tle S">Tle S</option>
+</select>
+<input type="password" id="mdp" placeholder="Mot de passe">
+<button onclick="connexion()">Entrer</button>
+<p id="erreur" style="color:red;text-align:center"></p>
+</div>
+<script>
+function connexion(){
+ let nom=document.getElementById("nom").value.trim();
+ let niveau=document.getElementById("niveau").value;
+ let mdp=document.getElementById("mdp").value.trim();
+ if(!nom||!niveau||!mdp){erreur.innerText="Remplis tout !";return;}
+ if(mdp!=="Lycée Pk12"){erreur.innerText="Mot de passe incorrect !";return;}
+ localStorage.setItem("nomEleve",nom);
+ localStorage.setItem("niveauEleve",niveau);
+ if(niveau==="Seconde"){window.location.href="quiz-seconde.html";}
+ else {window.location.href="quiz-tle.html";}
+}
+</script>
+</body>
+</html>
